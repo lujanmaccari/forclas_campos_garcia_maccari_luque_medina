@@ -1,19 +1,7 @@
-import peewee as pw
-
-crearDataBase = pw.SqliteDatabase('obras_urbanas.db')
-
-class BaseModel(pw.Model):
-    class Meta:
-        database = crearDataBase
-
-crearDataBase.connect()
-
-
-
+from peewee import *
 
 #crear bbdd
-from peewee import*
-sqlite_crear = SqliteDatabase('/importar_csv_a_base_datos/obras_urbanas.db',
+sqlite_crear = SqliteDatabase('obras_urbanas.db',
     pragmas={'journal_mode': 'wal'})
 
 #conexion con except OperationalError 
@@ -23,35 +11,59 @@ except OperationalError as e:
     print("Error al conectar la bbdd.",e)
     exit()
 
-#definicion del modelo_orm
 class BaseModel(Model):
     class Meta:
         database = sqlite_crear
 
-# ARCHIVO EXCEL CSV ESTRUCTURA CONTIENE LA INFORMACION  PARA LA CLASE OBRA  
+class Etapa(BaseModel):
+    idEtapa = AutoField()
+    nombre = CharField()
+
+class Empresa(BaseModel):
+    idEmpresa = AutoField()
+    licitacionOfertaEmpresa = CharField()
+    licitacionAnio = IntegerField()
+    tipoContratacion = CharField()
+    cuitContratista = IntegerField()
+    areaContratacion = CharField()
+    numeroContratacion = IntegerField()
+    
+class Ubicacion(BaseModel):
+    idUbicacion = AutoField()
+    barrio = CharField()
+    comuna = CharField()
+    direccion = CharField()
+    latitud = FloatField()
+    longitud = FloatField()
+
+class TipoObra(BaseModel):
+    idTipoObra = AutoField()
+    nombre = CharField()
+
+class AreaResponsable(BaseModel):
+    idAreaResponsable = AutoField()
+    nombre = CharField()
+
 class Obra(BaseModel):
-    nombre = str
-    etapa = str
-    #indica tipo de obra
-    tipo = str
-    descripcion = str
-    monto_contrato = int
-    comuna = int
-    barrio = str
-    direccion = str
-    #creo que es la forma de cargar fecha  año mes y dia
-    from datetime import date
-    fecha_inicio = date 
-    fecha_fin_inicial = date
-    plazo_meses = int
-    mano_obra = int
-    
-    #DE LA PARTE REQUERIMIENTOS HASTA EL PUNTO 3
-    
-#mapear class obra a tabla 
-sqlite_crear.create_tables([Obra])#(QUIZAS VA DENTRO DEL MODULO GESTIONAR_OBRAS.PY, PUNTO 4/C)
+    idObra = AutoField()
+    nombre = CharField()
+    idTipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
+    idAreaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
+    idUbicacion = ForeignKeyField(Ubicacion, backref='ubicacion') 
+    destacada = BooleanField()
+    fechaInicio = DateField() 
+    fechaFinIinicial = DateField()
+    idFuenteFinanciamiento = ForeignKeyField(Empresa, backref='fuente_financiamiento')
+    plazoMeses = IntegerField() 
+    manoObra = IntegerField() 
+    idEtapa = ForeignKeyField(Etapa, backref='etapa') 
+    numeroExpediente = IntegerField() 
+    porcentajeAvance = IntegerField() 
+    montoContrato = IntegerField() 
+    descripcion = CharField()
 
+class EmpresaObra(BaseModel):
+    idEmpresa = ForeignKeyField(Empresa, backref='empresa')
+    idObra = ForeignKeyField(Obra, backref='obra')
 
-
-
-
+# sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, EmpresaObra])

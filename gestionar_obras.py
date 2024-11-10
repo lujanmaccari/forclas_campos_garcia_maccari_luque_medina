@@ -37,6 +37,21 @@ class GestionarObra(ABC):
         except Exception as e:
             print(f"Error inesperado al conectar a la base de datos: {e}")
 
+    def mapear_orm():
+        # sqlite_crear.create_tables([Obra])
+        pass
+    
+    def limpiar_datos():
+        pass
+    
+    def cargar_datos():
+        pass    
+    
+    def nueva_obra():
+        pass
+    
+    def obtener_indicadores():
+        pass
     
 
 
