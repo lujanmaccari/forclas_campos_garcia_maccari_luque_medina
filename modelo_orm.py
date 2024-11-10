@@ -65,5 +65,3 @@ class Obra(BaseModel):
 class EmpresaObra(BaseModel):
     idEmpresa = ForeignKeyField(Empresa, backref='empresa')
     idObra = ForeignKeyField(Obra, backref='obra')
-
-# sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, EmpresaObra])

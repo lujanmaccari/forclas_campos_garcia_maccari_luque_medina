@@ -1,5 +1,5 @@
 import peewee as pw
-from modelo_orm import BaseModel
+from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaResponsable, TipoObra, EmpresaObra
 import pandas as pd
 from abc import ABC 
 from abc import abstractmethod
@@ -10,7 +10,7 @@ class GestionarObra(ABC):
     @classmethod
     def extraer_datos(cls, ruta_dataset):
         try:
-            df = pd.read_csv("observatorio_obras_urbanas.csv")
+            df = pd.read_csv("observatorio-de-obras-urbanas.csv",  sep=";", encoding="latin-1")
             print("Datos extraídos con éxito.")
             return df
         except FileNotFoundError as e:
@@ -38,8 +38,12 @@ class GestionarObra(ABC):
             print(f"Error inesperado al conectar a la base de datos: {e}")
 
     def mapear_orm():
-        # sqlite_crear.create_tables([Obra])
-        pass
+        try:
+            sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, EmpresaObra])
+            print("Tablas creadas exitosamente.")
+        except pw.OperationalError as e:
+            print(f"Error al crear las tablas: {e}")
+        
     
     def limpiar_datos():
         pass
@@ -53,6 +57,4 @@ class GestionarObra(ABC):
     def obtener_indicadores():
         pass
     
-
-
 
