@@ -48,17 +48,17 @@ class GestionarObra(ABC):
     @classmethod
     def limpiar_datos(cls):
         try:
-            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="latin-1")
-            print("Primeras sin reset", df.head(10))
-            
+            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="latin-1")            
             columnasAEliminar = ['ba_elige','link_interno','pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4']
-            df = df.drop(columns=columnasAEliminar, axis=1)
-            df = df.dropna(subset=['entorno', 'nombre', 'etapa', 'tipo', 'area_responsable', 'descripcion', 'monto_contrato', 'comuna', 'barrio', 'direccion', 'lat', 'lng', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'porcentaje_avance', 'licitacion_oferta_empresa', 'licitacion_anio', 'contratacion_tipo', 'nro_contratacion', 'cuit_contratista', 'beneficiarios', 'mano_obra', 'compromiso', 'destacada', 'expediente-numero', 'estudio_ambiental_descarga', 'financiamiento'], axis=0, how='all')
-            df = df.dropna(axis=0, how='any')
-            df = df.reset_index(drop=True)
+            
+            df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 
-            print("Datos limpios (primeras 10 filas):", df.head(10))
-            # return df
+            df = df.drop(columns=columnasAEliminar, axis=1)
+            
+            df = df.dropna(subset=['entorno', 'nombre', 'etapa', 'tipo', 'area_responsable', 'descripcion', 'monto_contrato', 'comuna', 'barrio', 'direccion', 'lat', 'lng', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'porcentaje_avance', 'licitacion_oferta_empresa', 'licitacion_anio', 'contratacion_tipo', 'nro_contratacion', 'cuit_contratista', 'beneficiarios', 'mano_obra', 'compromiso', 'destacada', 'expediente-numero', 'estudio_ambiental_descarga', 'financiamiento'], axis=0, how='all')
+  
+            print("Datos limpios (primeras 10 filas):", df.columns)
+            return df
         except Exception as e:
             print(f"Error al limpiar los datos: {e}")
             
