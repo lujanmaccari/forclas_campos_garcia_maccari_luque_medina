@@ -1,5 +1,5 @@
 import peewee as pw
-from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaResponsable, TipoObra, EmpresaObra
+from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaResponsable, TipoObra,Barrio, EmpresaObra
 import pandas as pd
 from abc import ABC 
 from abc import abstractmethod
@@ -40,7 +40,7 @@ class GestionarObra(ABC):
     @classmethod
     def mapear_orm(cls):
         try:
-            sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, EmpresaObra])
+            sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, EmpresaObra, Barrio])
             print("Tablas creadas exitosamente.")
         except pw.OperationalError as e:
             print(f"Error al crear las tablas: {e}")
@@ -48,7 +48,7 @@ class GestionarObra(ABC):
     @classmethod
     def limpiar_datos(cls):
         try:
-            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8", encoding_errors="ignore")            
+            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")            
             columnasAEliminar = ['ba_elige','link_interno','pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4']
             
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
@@ -82,7 +82,7 @@ class GestionarObra(ABC):
             #         df = df.reset_index(drop=True)
             #     elif column == 'licitacion_oferta_empresa':
             #         df[column] = df[column].str.replace(',', '.')
-            df.to_csv("datos_limpios_obras_urbanas.csv", index=False)
+            df.to_csv("datos_limpios_obras_urbanas.csv",sep=";",encoding="utf8" ,  index=False)
             
             print("Datos limpios guardados en 'datos_limpios_obras_urbanas.csv'.")
             

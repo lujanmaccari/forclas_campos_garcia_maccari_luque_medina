@@ -19,6 +19,9 @@ class Etapa(BaseModel):
     idEtapa = AutoField()
     nombre = CharField()
 
+    class Meta:
+        db_table = 'Etapa'
+
 class Empresa(BaseModel):
     idEmpresa = AutoField()
     licitacionOfertaEmpresa = CharField()
@@ -27,22 +30,41 @@ class Empresa(BaseModel):
     cuitContratista = IntegerField()
     areaContratacion = CharField()
     numeroContratacion = IntegerField()
-    
-class Ubicacion(BaseModel):
-    idUbicacion = AutoField()
-    barrio = CharField()
+
+    class Meta:
+        db_table = 'Empresa'
+
+class Barrio(BaseModel):
+    idBarrio = AutoField()
+    nombre = CharField()
     comuna = CharField()
-    direccion = CharField()
-    latitud = FloatField()
-    longitud = FloatField()
+
+    class Meta:
+       db_table = 'Barrio'
 
 class TipoObra(BaseModel):
     idTipoObra = AutoField()
     nombre = CharField()
+    
+    class Meta:
+       db_table = 'TipoObra'
 
 class AreaResponsable(BaseModel):
     idAreaResponsable = AutoField()
     nombre = CharField()
+
+    class Meta:
+       db_table = 'AreaResponsable'
+
+class Ubicacion(BaseModel):
+    idUbicacion = AutoField()
+    idBarrio = ForeignKeyField(Barrio, backref='barrio')
+    direccion = CharField()
+    latitud = FloatField()
+    longitud = FloatField()
+
+    class Meta:
+       db_table = 'Ubicacion'
 
 class Obra(BaseModel):
     idObra = AutoField()
@@ -62,6 +84,13 @@ class Obra(BaseModel):
     montoContrato = IntegerField() 
     descripcion = CharField()
 
+    class Meta:
+       db_table = 'Obra'
+
 class EmpresaObra(BaseModel):
     idEmpresa = ForeignKeyField(Empresa, backref='empresa')
     idObra = ForeignKeyField(Obra, backref='obra')
+
+    class Meta:
+       db_table = 'EmpresaObra'
+
