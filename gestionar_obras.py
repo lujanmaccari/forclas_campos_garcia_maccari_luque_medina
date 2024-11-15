@@ -91,9 +91,16 @@ class GestionarObra(ABC):
             print(f"Error al limpiar los datos: {e}")
             
     @classmethod
-    def cargar_datos():
-        pass    
-    
+    def cargar_datos(cls):
+        df = GestionarObra.limpiar_datos()    
+        datosAreaResponsable = list(df['area_responsable'].unique())
+
+        for area in datosAreaResponsable:
+            area_responsable = AreaResponsable.create(nombre=area)
+            area_responsable.save()
+
+        print("Datos cargados exitosamente.")
+
     @classmethod
     def nueva_obra():
         pass
@@ -104,4 +111,5 @@ class GestionarObra(ABC):
     
 
 prueba = GestionarObra()
-prueba.limpiar_datos()
+# prueba.limpiar_datos()
+prueba.cargar_datos()
