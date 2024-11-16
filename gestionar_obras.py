@@ -100,7 +100,7 @@ class GestionarObra(ABC):
         for etapa in datosEtapa:
             etapa = Etapa.create(nombre=etapa)
             etapa.save()
-
+        #datosBarrios = df[['(barrio','comuna']].drop_duplicates()
         print("Datos cargados exitosamente.")
 
     @classmethod
