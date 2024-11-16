@@ -49,43 +49,35 @@ class GestionarObra(ABC):
     def limpiar_datos(cls):
         try:
             df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")            
+            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")            
+            columnasAEliminar = ['ba_elige','link_interno','pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4']
+            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")
             columnasAEliminar = ['ba_elige','link_interno','pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4']
             
+            columnasAEliminar = ['ba_elige', 'link_interno', 'pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4', 'estudio_ambiental_descarga', 'entorno', 'compromiso', 'destacada', 'financiamiento']
+            
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-
             df = df.drop(columns=columnasAEliminar, axis=1)
             
-            df = df.dropna(subset=['entorno', 'nombre', 'etapa', 'tipo', 'area_responsable', 'descripcion', 'monto_contrato', 'comuna', 'barrio', 'direccion', 'lat', 'lng', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'porcentaje_avance', 'licitacion_oferta_empresa', 'licitacion_anio', 'contratacion_tipo', 'nro_contratacion', 'cuit_contratista', 'beneficiarios', 'mano_obra', 'compromiso', 'destacada', 'expediente-numero', 'estudio_ambiental_descarga', 'financiamiento'], axis=0, how='all')
-  
-            # print("Datos limpios (primeras 10 filas):", df.head(20))
+            df.fillna({'tipo_obra': 'Salud'}, inplace=True)            
+            df.fillna({'descripcion': 'Obra en ejecucion'}, inplace=True)            
+            df.fillna({'monto_contrato': '300.000.000'}, inplace=True)            
+            df.fillna({'porcentaje_avance': '0'}, inplace=True)            
+            df.fillna({'fecha_fin_inicial': '31/12/2024'}, inplace=True)            
+            df.fillna({'expediente-numero': '46213850'}, inplace=True)            
+            df.fillna({'mano_obra': '10'}, inplace=True)            
+            df.fillna({'nro_contratacion': '1816/SIGAF/2014'}, inplace=True)            
+            df.fillna({'cuit_contratista': '30505454436'}, inplace=True)            
+            df.fillna({'beneficiarios': 'vecinos'}, inplace=True)            
+            df.fillna({'contratacion_tipo': 'Licitación Pública'}, inplace=True)            
             
-            # for column in df.columns:
-            #     if column == 'comuna' or column == 'barrio' or column == 'destacada':
-            #         df = df.dropna(subset=[column], how='all')
-            #         df = df.reset_index(drop=True)
-            #         # df = df.fillna(value=1)
-            #     elif column == 'monto_contrato':
-            #         df[column] = pd.to_numeric(df[column], errors='coerce')
-            #         df = df.reset_index(drop=True)
-            #     elif column == 'fecha_inicio' or column == 'fecha_fin_inicial':
-            #         df[column] = pd.to_datetime(df[column], errors='coerce')
-            #         df = df.reset_index(drop=True)
-            #     elif column == 'plazo_meses' or column == 'porcentaje_avance':
-            #         df[column] = pd.to_numeric(df[column], errors='coerce')
-            #         df = df.reset_index(drop=True)
-            #     elif column == 'expediente-numero':
-            #         df[column] = pd.to_numeric(df[column], errors='coerce')
-            #         df = df.reset_index(drop=True)
-            #     elif column == 'financiamiento':
-            #         df[column] = df[column].str.replace(',', '.')
-            #         df[column] = pd.to_numeric(df[column], errors='coerce')
-            #         df = df.reset_index(drop=True)
-            #     elif column == 'licitacion_oferta_empresa':
-            #         df[column] = df[column].str.replace(',', '.')
-            df.to_csv("datos_limpios_obras_urbanas.csv",sep=";",encoding="utf8" ,  index=False)
+            columnas_verificables = [col for col in df.columns if col not in columnasAEliminar]
             
-            print("Datos limpios guardados en 'datos_limpios_obras_urbanas.csv'.")
+            df = df.dropna(subset=columnas_verificables, how='any')
             
+            df.to_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8", index=False)
+                        
+            print("Datos limpios guardados en 'datos_limpios_obras_urbanas.csv'.", df)
             return df
         except Exception as e:
             print(f"Error al limpiar los datos: {e}")
