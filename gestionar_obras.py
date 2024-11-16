@@ -95,9 +95,19 @@ class GestionarObra(ABC):
         df = GestionarObra.limpiar_datos()    
         datosAreaResponsable = list(df['area_responsable'].unique())
 
-        for area in datosAreaResponsable:
-            area_responsable = AreaResponsable.create(nombre=area)
-            area_responsable.save()
+        # for area in datosAreaResponsable:
+        #     area_responsable = AreaResponsable.create(nombre=area)
+        #     area_responsable.save()
+         
+        datosTipoObra = list(df['tipo'].unique())
+        for tipo in datosTipoObra:
+            tipo_obra = TipoObra.create(nombre=tipo)
+            tipo_obra.save()
+
+        datosEtapa = list(df['etapa'].unique())
+        for etapa in datosEtapa:
+            etapa = Etapa.create(nombre=etapa)
+            etapa.save()
 
         print("Datos cargados exitosamente.")
 
