@@ -93,8 +93,10 @@ class GestionarObra(ABC):
          
         datosTipoObra = list(df['tipo'].unique())
         for tipo in datosTipoObra:
-            tipo_obra = TipoObra.create(nombre=tipo)
-            tipo_obra.save()
+            #Agregue un if para evitar duplicados
+            if not TipoObra.select().where(TipoObra.nombre == tipo).exists():
+                tipo_obra = TipoObra.create(nombre=tipo)
+                tipo_obra.save()
 
         datosEtapa = list(df['etapa'].unique())
         for etapa in datosEtapa:

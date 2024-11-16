@@ -44,7 +44,7 @@ class Barrio(BaseModel):
 
 class TipoObra(BaseModel):
     idTipoObra = AutoField()
-    nombre = CharField()
+    nombre = CharField(unique = True)#agrego restriccion unique = True
     
     class Meta:
        db_table = 'TipoObra'
