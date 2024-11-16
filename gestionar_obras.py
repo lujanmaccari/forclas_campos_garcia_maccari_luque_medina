@@ -101,7 +101,16 @@ class GestionarObra(ABC):
             etapa = Etapa.create(nombre=etapa)
             etapa.save()
         #datosBarrios = df[['(barrio','comuna']].drop_duplicates()
+        
+        
+        #Recorrer el archivo registro por registro y dentro del for pasamos los dtos dl archivo a objetos
+        #si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte
+        
+        
+        
         print("Datos cargados exitosamente.")
+        
+       
 
     @classmethod
     def nueva_obra():
@@ -114,4 +123,8 @@ class GestionarObra(ABC):
 
 prueba = GestionarObra()
 # prueba.limpiar_datos()
+GestionarObra.conectar_db()
+
+#mapeo el ORM 
+GestionarObra.mapear_orm()
 prueba.cargar_datos()
