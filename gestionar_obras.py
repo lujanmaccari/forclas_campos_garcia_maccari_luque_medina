@@ -121,34 +121,34 @@ class GestionarObra(ABC):
         #         print(f"Error inesperado al procesar la ubicación: {e}")
         
        
-        try:
-            datos_empresas = df[['licitacion_oferta_empresa','licitacion_anio', 'cuit_contratista', 'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
-            for _, row in datos_empresas.iterrows():
-                try:
-                    area_responsable = AreaResponsable.get(AreaResponsable.nombre==row['area_responsable'])
-                    if not Empresa.select().where(Empresa.cuitContratista == row['cuit_contratista']).exists():
-                        Empresa.create(
-                            licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
-                            licitacionAnio=row.get('licitacion_anio', 0),
-                            tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
-                            cuitContratista=str(row['cuit_contratista'])[:13],
-                            areaContratacion=area_responsable,
-                            numeroContratacion=(row['nro_contratacion'])
-                        )
-                except KeyError as ke:
-                    print(f"Error: Falta una columna clave en el DataFrame. Detalles: {ke}")
-                except ValueError as ve:
-                    print(f"Error de valor: Datos inválidos al crear Empresa. Detalles: {ve}")
-                except pw.IntegrityError as ie:
-                    print(f"Error de integridad: {ie}")
-                except Exception as e:
-                    print(f"Error inesperado al insertar empresa: {row.get('licitacion_oferta_empresa', 'Desconocido')}, {e}")
-        except KeyError as ke:
-            print(f"Error: Falta una columna clave en el DataFrame principal. Detalles: {ke}")
-        except ValueError as ve:
-            print(f"Error de valor general al procesar datos de empresas. Detalles: {ve}")
-        except Exception as e:
-            print(f"Error inesperado al procesar datos de empresas: {e}")
+        # try:
+        #     datos_empresas = df[['licitacion_oferta_empresa','licitacion_anio', 'cuit_contratista', 'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
+        #     for _, row in datos_empresas.iterrows():
+        #         try:
+        #             area_responsable = AreaResponsable.get(AreaResponsable.nombre==row['area_responsable'])
+        #             if not Empresa.select().where(Empresa.cuitContratista == row['cuit_contratista']).exists():
+        #                 Empresa.create(
+        #                     licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
+        #                     licitacionAnio=row.get('licitacion_anio', 0),
+        #                     tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
+        #                     cuitContratista=str(row['cuit_contratista'])[:13],
+        #                     areaContratacion=area_responsable,
+        #                     numeroContratacion=(row['nro_contratacion'])
+        #                 )
+        #         except KeyError as ke:
+        #             print(f"Error: Falta una columna clave en el DataFrame. Detalles: {ke}")
+        #         except ValueError as ve:
+        #             print(f"Error de valor: Datos inválidos al crear Empresa. Detalles: {ve}")
+        #         except pw.IntegrityError as ie:
+        #             print(f"Error de integridad: {ie}")
+        #         except Exception as e:
+        #             print(f"Error inesperado al insertar empresa: {row.get('licitacion_oferta_empresa', 'Desconocido')}, {e}")
+        # except KeyError as ke:
+        #     print(f"Error: Falta una columna clave en el DataFrame principal. Detalles: {ke}")
+        # except ValueError as ve:
+        #     print(f"Error de valor general al procesar datos de empresas. Detalles: {ve}")
+        # except Exception as e:
+        #     print(f"Error inesperado al procesar datos de empresas: {e}")
 
         
         #Recorrer el archivo registro por registro y dentro del for pasamos los dtos dl archivo a objetos
