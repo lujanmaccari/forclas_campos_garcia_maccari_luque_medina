@@ -124,7 +124,7 @@ class GestionarObra(ABC):
             datos_empresas = df[['licitacion_oferta_empresa', 'cuit_contratista', 'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
             for _, row in datos_empresas.iterrows():
                 try:
-                    area_responsable = AreaResponsable.get_or_create(nombre=row['area_responsable'])
+                    area_responsable = AreaResponsable.get(AreaResponsable.nombre==row['area_responsable'])
                     if not Empresa.select().where(Empresa.cuitContratista == row['cuit_contratista']).exists():
                         Empresa.create(
                             licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
@@ -132,7 +132,7 @@ class GestionarObra(ABC):
                             tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
                             cuitContratista=int(row['cuit_contratista']),
                             areaContratacion=area_responsable,
-                            numeroContratacion=int(row['nro_contratacion'])
+                            numeroContratacion=(row['nro_contratacion'])
                         )
                 except KeyError as ke:
                     print(f"Error: Falta una columna clave en el DataFrame. Detalles: {ke}")
