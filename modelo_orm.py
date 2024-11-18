@@ -72,7 +72,6 @@ class Obra(BaseModel):
     idTipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
     idAreaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
     idUbicacion = ForeignKeyField(Ubicacion, backref='ubicacion') 
-    destacada = BooleanField()
     fechaInicio = DateField() 
     fechaFinIinicial = DateField()
     plazoMeses = IntegerField() 
