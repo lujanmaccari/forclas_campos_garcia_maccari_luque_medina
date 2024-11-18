@@ -75,7 +75,6 @@ class Obra(BaseModel):
     destacada = BooleanField()
     fechaInicio = DateField() 
     fechaFinIinicial = DateField()
-    idFuenteFinanciamiento = ForeignKeyField(Empresa, backref='fuente_financiamiento')
     plazoMeses = IntegerField() 
     manoObra = IntegerField() 
     idEtapa = ForeignKeyField(Etapa, backref='etapa') 

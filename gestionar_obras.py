@@ -48,11 +48,7 @@ class GestionarObra(ABC):
     @classmethod
     def limpiar_datos(cls):
         try:
-            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")            
-            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")            
-            columnasAEliminar = ['ba_elige','link_interno','pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4']
-            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")
-            columnasAEliminar = ['ba_elige','link_interno','pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4']
+            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")                      
             
             columnasAEliminar = ['ba_elige', 'link_interno', 'pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4', 'estudio_ambiental_descarga', 'entorno', 'compromiso', 'destacada', 'financiamiento']
             
@@ -103,12 +99,65 @@ class GestionarObra(ABC):
             etapa = Etapa.create(nombre=etapa)
             etapa.save()
         #datosBarrios = df[['(barrio','comuna']].drop_duplicates()
+       
+          #hasta aca es lo que hicimos antes ------
+        # for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
+        #     try:
+        #         if not Barrio.select().where(Barrio.nombre == row['barrio']).exists():
+        #             Barrio.create(nombre=row['barrio'], comuna=row['comuna'])
+        #     except Exception as e:
+        #         print(f"Error al insertar barrio {row['barrio']}: {e}")
+
+        # for area in df['area_responsable'].unique():
+        #     try:
+        #         if not AreaResponsable.select().where(AreaResponsable.nombre == area).exists():
+        #             AreaResponsable.create(nombre=area)
+        #     except Exception as e:
+        #         print(f"Error al insertar área responsable {area}: {e}")
         
+        # for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
+        #     try:
+        #         barrio = Barrio.get(Barrio.nombre == row['barrio'])
+        #         Ubicacion.create(
+        #         idBarrio=barrio,direccion=row['direccion'],latitud=float(row['lat'].replace(',', '.')),longitud=float(row['lng'].replace(',', '.'))            )
+        #     except Barrio.DoesNotExist:
+        #         print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
+        #     except Exception as e:
+        #         print(f"Error inesperado al procesar la ubicación: {e}")
+        
+       
+        # try:
+        #     datos_empresas = df[['licitacion_oferta_empresa', 'cuit_contratista', 'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
+        #     for _, row in datos_empresas.iterrows():
+        #         try:
+        #             area_responsable = AreaResponsable.get_or_create(nombre=row['area_responsable'])
+        #             if not Empresa.select().where(Empresa.cuitContratista == row['cuit_contratista']).exists():
+        #                 Empresa.create(
+        #                     licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
+        #                     licitacionAnio=int(row.get('licitacion_anio', 0)),
+        #                     tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
+        #                     cuitContratista=int(row['cuit_contratista']),
+        #                     areaContratacion=area_responsable,
+        #                     numeroContratacion=int(row['nro_contratacion'])
+        #                 )
+        #         except KeyError as ke:
+        #             print(f"Error: Falta una columna clave en el DataFrame. Detalles: {ke}")
+        #         except ValueError as ve:
+        #             print(f"Error de valor: Datos inválidos al crear Empresa. Detalles: {ve}")
+        #         except pw.IntegrityError as ie:
+        #             print(f"Error de integridad: {ie}")
+        #         except Exception as e:
+        #             print(f"Error inesperado al insertar empresa: {row.get('licitacion_oferta_empresa', 'Desconocido')}, {e}")
+        # except KeyError as ke:
+        #     print(f"Error: Falta una columna clave en el DataFrame principal. Detalles: {ke}")
+        # except ValueError as ve:
+        #     print(f"Error de valor general al procesar datos de empresas. Detalles: {ve}")
+        # except Exception as e:
+        #     print(f"Error inesperado al procesar datos de empresas: {e}")
+
         
         #Recorrer el archivo registro por registro y dentro del for pasamos los dtos dl archivo a objetos
-        #si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte
-        
-        
+        #si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte     
         
         print("Datos cargados exitosamente.")
         
