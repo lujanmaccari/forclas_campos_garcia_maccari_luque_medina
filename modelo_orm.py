@@ -91,15 +91,3 @@ class EmpresaObra(BaseModel):
 
     class Meta:
        db_table = 'EmpresaObra'
-
-deleted_rows = Ubicacion.delete().execute()
-# Empresa.delete().where(Empresa.licitacionOfertaEmpresa == "-").execute()
-# Empresa.delete().execute()
-
-
-# sqlite_crear.execute_sql('DELETE FROM sqlite_sequence WHERE name="Empresa";')
-
-# print("Registros eliminados y contador de IDs reiniciado.")
-
-# empresa = Empresa.update({Empresa.licitacionAnio: "2017"})
-# empresa.where(Empresa.licitacionAnio == "512-0730-OC17").execute()

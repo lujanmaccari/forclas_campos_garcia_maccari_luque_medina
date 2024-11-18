@@ -55,6 +55,7 @@ class GestionarObra(ABC):
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
             df = df.drop(columns=columnasAEliminar, axis=1)
             
+            df.fillna({'nombre': 'Area ambiental'}, inplace=True)            
             df.fillna({'tipo_obra': 'Salud'}, inplace=True)            
             df.fillna({'descripcion': 'Obra en ejecucion'}, inplace=True)            
             df.fillna({'monto_contrato': '300.000.000'}, inplace=True)            
@@ -114,7 +115,11 @@ class GestionarObra(ABC):
         #     try:
         #         barrio = Barrio.get(Barrio.nombre == row['barrio'])
         #         Ubicacion.create(
-        #         idBarrio=barrio,direccion=row['direccion'],latitud=float(row['lat'].replace(',', '.')),longitud=float(row['lng'].replace(',', '.'))            )
+        #         idBarrio=barrio,
+        #         direccion=row['direccion'],
+        #         latitud=row['lat'],
+        #         longitud=row['lng']           
+        #         )
         #     except Barrio.DoesNotExist:
         #         print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
         #     except Exception as e:
@@ -151,9 +156,57 @@ class GestionarObra(ABC):
         #     print(f"Error inesperado al procesar datos de empresas: {e}")
 
         
-        #Recorrer el archivo registro por registro y dentro del for pasamos los dtos dl archivo a objetos
-        #si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte     
-        
+        # Recorrer el archivo registro por registro y dentro del for pasamos los dtos dl archivo a objetos
+        # si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte     
+
+        try:  
+            for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expediente-numero', 'porcentaje_avance', 'monto_contrato', 'descripcion']].drop_duplicates().iterrows():
+                try:
+                    tipoObra = TipoObra.get(TipoObra.nombre == row['tipo'])
+                    areaResponsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
+                    etapa = Etapa.get(Etapa.nombre == row['etapa'])
+                    ubicacion = Ubicacion.get(Ubicacion.direccion == row['direccion'])
+                    montoContrato = row['monto_contrato'].replace('$', '').replace(',', '')
+                    
+                    obraExistente = Obra.select().where(
+                        Obra.nombre == row['nombre'],
+                        Obra.idUbicacion == ubicacion,
+                        Obra.idTipoObra == tipoObra,
+                        Obra.idAreaResponsable == areaResponsable,
+                        Obra.idEtapa == etapa
+                    ).first()
+                    
+                    if obraExistente:
+                        print(f"La obra '{row['nombre']}' ya existe en la base de datos.")
+                        continue
+                    
+                    Obra.create(
+                        idTipoObra=tipoObra,
+                        idAreaResponsable=areaResponsable,
+                        idUbicacion=ubicacion,
+                        idEtapa=etapa,
+                        nombre=row['nombre'],
+                        fechaInicio=row['fecha_inicio'],
+                        fechaFinIinicial=row['fecha_fin_inicial'],
+                        plazoMeses=row['plazo_meses'],
+                        manoObra=row['mano_obra'],
+                        numeroExpediente=row['expediente-numero'],
+                        porcentajeAvance=row['porcentaje_avance'],
+                        montoContrato=montoContrato,
+                        descripcion=row['descripcion'],
+                    )
+                except TipoObra.DoesNotExist:
+                    print(f"Error: El tipo de obra '{row['tipo']}' no existe en la base de datos. Verifica los datos.")
+                except AreaResponsable.DoesNotExist:
+                    print(f"Área responsable '{row['area_responsable']}' no encontrado.")
+                except Ubicacion.DoesNotExist:
+                    print(f"Ubicación '{row['direccion']}' no encontrada.")
+                except Etapa.DoesNotExist:
+                    print(f"Etapa '{row['etapa']}' no encontrada.")
+        except Exception as e:
+            print(f"Error al cargar datos: {e}")
+
+      
         print("Datos cargados exitosamente.")
         
        
@@ -168,10 +221,4 @@ class GestionarObra(ABC):
     
 
 prueba = GestionarObra()
-# prueba.limpiar_datos()
-# GestionarObra.conectar_db()
-
-# #mapeo el ORM 
-# GestionarObra.mapear_orm()
-prueba.cargar_datos()
 
