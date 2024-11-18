@@ -65,7 +65,8 @@ class GestionarObra(ABC):
             df.fillna({'nro_contratacion': '1816/SIGAF/2014'}, inplace=True)            
             df.fillna({'cuit_contratista': '30505454436'}, inplace=True)            
             df.fillna({'beneficiarios': 'vecinos'}, inplace=True)            
-            df.fillna({'contratacion_tipo': 'Licitación Pública'}, inplace=True)            
+            df.fillna({'contratacion_tipo': 'Licitación Pública'}, inplace=True)
+            df.fillna({'licitacion_anio': '2024'}, inplace=True)            
             
             columnas_verificables = [col for col in df.columns if col not in columnasAEliminar]
             
@@ -82,55 +83,55 @@ class GestionarObra(ABC):
     def cargar_datos(cls):
         df = GestionarObra.limpiar_datos()    
 
-        datosTipoObra = list(df['tipo'].unique())
-        for tipo in datosTipoObra:
-            #Agregue un if para evitar duplicados
-            if not TipoObra.select().where(TipoObra.nombre == tipo).exists():
-                tipo_obra = TipoObra.create(nombre=tipo)
-                tipo_obra.save()
+        # datosTipoObra = list(df['tipo'].unique())
+        # for tipo in datosTipoObra:
+        #     #Agregue un if para evitar duplicados
+        #     if not TipoObra.select().where(TipoObra.nombre == tipo).exists():
+        #         tipo_obra = TipoObra.create(nombre=tipo)
+        #         tipo_obra.save()
 
-        datosEtapa = list(df['etapa'].unique())
-        for etapa in datosEtapa:
-            etapa = Etapa.create(nombre=etapa)
-            etapa.save()
+        # datosEtapa = list(df['etapa'].unique())
+        # for etapa in datosEtapa:
+        #     etapa = Etapa.create(nombre=etapa)
+        #     etapa.save()
        
-          #hasta aca es lo que hicimos antes ------
-        for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
-            try:
-                if not Barrio.select().where(Barrio.nombre == row['barrio']).exists():
-                    Barrio.create(nombre=row['barrio'], comuna=row['comuna'])
-            except Exception as e:
-                print(f"Error al insertar barrio {row['barrio']}: {e}")
+        #   #hasta aca es lo que hicimos antes ------
+        # for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
+        #     try:
+        #         if not Barrio.select().where(Barrio.nombre == row['barrio']).exists():
+        #             Barrio.create(nombre=row['barrio'], comuna=row['comuna'])
+        #     except Exception as e:
+        #         print(f"Error al insertar barrio {row['barrio']}: {e}")
 
-        for area in df['area_responsable'].unique():
-            try:
-                if not AreaResponsable.select().where(AreaResponsable.nombre == area).exists():
-                    AreaResponsable.create(nombre=area)
-            except Exception as e:
-                print(f"Error al insertar área responsable {area}: {e}")
+        # for area in df['area_responsable'].unique():
+        #     try:
+        #         if not AreaResponsable.select().where(AreaResponsable.nombre == area).exists():
+        #             AreaResponsable.create(nombre=area)
+        #     except Exception as e:
+        #         print(f"Error al insertar área responsable {area}: {e}")
         
-        for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
-            try:
-                barrio = Barrio.get(Barrio.nombre == row['barrio'])
-                Ubicacion.create(
-                idBarrio=barrio,direccion=row['direccion'],latitud=float(row['lat'].replace(',', '.')),longitud=float(row['lng'].replace(',', '.'))            )
-            except Barrio.DoesNotExist:
-                print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
-            except Exception as e:
-                print(f"Error inesperado al procesar la ubicación: {e}")
+        # for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
+        #     try:
+        #         barrio = Barrio.get(Barrio.nombre == row['barrio'])
+        #         Ubicacion.create(
+        #         idBarrio=barrio,direccion=row['direccion'],latitud=float(row['lat'].replace(',', '.')),longitud=float(row['lng'].replace(',', '.'))            )
+        #     except Barrio.DoesNotExist:
+        #         print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
+        #     except Exception as e:
+        #         print(f"Error inesperado al procesar la ubicación: {e}")
         
        
         try:
-            datos_empresas = df[['licitacion_oferta_empresa', 'cuit_contratista', 'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
+            datos_empresas = df[['licitacion_oferta_empresa','licitacion_anio', 'cuit_contratista', 'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
             for _, row in datos_empresas.iterrows():
                 try:
                     area_responsable = AreaResponsable.get(AreaResponsable.nombre==row['area_responsable'])
                     if not Empresa.select().where(Empresa.cuitContratista == row['cuit_contratista']).exists():
                         Empresa.create(
                             licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
-                            licitacionAnio=int(row.get('licitacion_anio')),
+                            licitacionAnio=row.get('licitacion_anio', 0),
                             tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
-                            cuitContratista=int(row['cuit_contratista']),
+                            cuitContratista=str(row['cuit_contratista'])[:13],
                             areaContratacion=area_responsable,
                             numeroContratacion=(row['nro_contratacion'])
                         )
@@ -167,9 +168,10 @@ class GestionarObra(ABC):
     
 
 prueba = GestionarObra()
-# # prueba.limpiar_datos()
+# prueba.limpiar_datos()
 # GestionarObra.conectar_db()
 
 # #mapeo el ORM 
 # GestionarObra.mapear_orm()
 prueba.cargar_datos()
+
