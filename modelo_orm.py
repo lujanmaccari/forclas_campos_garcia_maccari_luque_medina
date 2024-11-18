@@ -29,7 +29,7 @@ class Empresa(BaseModel):
     tipoContratacion = CharField()
     cuitContratista = IntegerField()
     areaContratacion = CharField()
-    numeroContratacion = IntegerField()
+    numeroContratacion = CharField()  
 
     class Meta:
         db_table = 'Empresa'
@@ -44,7 +44,7 @@ class Barrio(BaseModel):
 
 class TipoObra(BaseModel):
     idTipoObra = AutoField()
-    nombre = CharField(unique = True)#agrego restriccion unique = True
+    nombre = CharField(unique = True)
     
     class Meta:
        db_table = 'TipoObra'
