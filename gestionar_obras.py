@@ -128,7 +128,7 @@ class GestionarObra(ABC):
                     if not Empresa.select().where(Empresa.cuitContratista == row['cuit_contratista']).exists():
                         Empresa.create(
                             licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
-                            licitacionAnio=int(row.get('licitacion_anio', 0)),
+                            licitacionAnio=int(row.get('licitacion_anio')),
                             tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
                             cuitContratista=int(row['cuit_contratista']),
                             areaContratacion=area_responsable,
