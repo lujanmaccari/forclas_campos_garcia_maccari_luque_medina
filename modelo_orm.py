@@ -27,9 +27,9 @@ class Empresa(BaseModel):
     licitacionOfertaEmpresa = CharField()
     licitacionAnio = IntegerField()
     tipoContratacion = CharField()
-    cuitContratista = IntegerField()
+    cuitContratista = CharField()
     areaContratacion = CharField()
-    numeroContratacion = CharField()  
+    numeroContratacion = IntegerField()
 
     class Meta:
         db_table = 'Empresa'
