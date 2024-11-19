@@ -84,62 +84,141 @@ class GestionarObra(ABC):
     def cargar_datos(cls):
         df = GestionarObra.limpiar_datos()    
 
-        # datosTipoObra = list(df['tipo'].unique())
-        # for tipo in datosTipoObra:
-        #     #Agregue un if para evitar duplicados
-        #     if not TipoObra.select().where(TipoObra.nombre == tipo).exists():
-        #         tipo_obra = TipoObra.create(nombre=tipo)
-        #         tipo_obra.save()
+        # try:
+        #     datosTipoObra = list(df['tipo'].unique())
+        #     for tipo in datosTipoObra:
+        #         try:
+        #             tipo_existente = TipoObra.select().where(TipoObra.nombre == tipo).first()
+                    
+        #             if tipo_existente:
+        #                 print(f"Tipo de obra ya existente: {tipo}")
+        #                 continue
 
-        # datosEtapa = list(df['etapa'].unique())
-        # for etapa in datosEtapa:
-        #     etapa = Etapa.create(nombre=etapa)
-        #     etapa.save()
+        #             tipo_obra = TipoObra.create(nombre=tipo)
+        #             tipo_obra.save()
+        #             print(f"Tipo de obra creado: {tipo}")
+                
+        #         except Exception as e:
+        #             print(f"Error al procesar el tipo de obra '{tipo}': {e}")
+
+        # except Exception as e:
+        #     print(f"Error general al cargar datos para TipoObra: {e}")
+
+        # try:
+        #     datosEtapa = list(df['etapa'].unique())
+        #     for etapa in datosEtapa:
+        #         try:
+        #             etapa_existente = Etapa.select().where(Etapa.nombre == etapa).first()
+                    
+        #             if etapa_existente:
+        #                 print(f"Etapa ya existente: {etapa}")
+        #                 continue
+
+        #             nueva_etapa = Etapa.create(nombre=etapa)
+        #             nueva_etapa.save()
+        #             print(f"Etapa creada: {etapa}")
+                
+        #         except Exception as e:
+        #             print(f"Error al procesar la etapa '{etapa}': {e}")
+
+        # except Exception as e:
+        #     print(f"Error general al cargar datos para Etapa: {e}")
        
-        #   #hasta aca es lo que hicimos antes ------
-        # for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
-        #     try:
-        #         if not Barrio.select().where(Barrio.nombre == row['barrio']).exists():
-        #             Barrio.create(nombre=row['barrio'], comuna=row['comuna'])
-        #     except Exception as e:
-        #         print(f"Error al insertar barrio {row['barrio']}: {e}")
+        # try:
+        #     for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
+        #         try:
+        #             # Verificar si el barrio ya existe en la base de datos
+        #             barrio_existente = Barrio.select().where(Barrio.nombre == row['barrio']).first()
+                    
+        #             if barrio_existente:
+        #                 print(f"Barrio ya existente: {row['barrio']} - Comuna: {barrio_existente.comuna}")
+        #                 continue
 
-        # for area in df['area_responsable'].unique():
-        #     try:
-        #         if not AreaResponsable.select().where(AreaResponsable.nombre == area).exists():
+        #             Barrio.create(nombre=row['barrio'], comuna=row['comuna'])
+        #             print(f"Barrio creado: {row['barrio']} - Comuna: {row['comuna']}")
+                
+        #         except Exception as e:
+        #             print(f"Error al insertar barrio {row['barrio']}: {e}")
+
+        # except Exception as e:
+        #     print(f"Error general al cargar datos para Barrio: {e}")
+
+        # try:
+        #     for area in df['area_responsable'].unique():
+        #         try:
+        #             area_existente = AreaResponsable.select().where(AreaResponsable.nombre == area).first()
+                    
+        #             if area_existente:
+        #                 print(f"Área responsable ya existente: {area}")
+        #                 continue
         #             AreaResponsable.create(nombre=area)
-        #     except Exception as e:
-        #         print(f"Error al insertar área responsable {area}: {e}")
+        #             print(f"Área responsable creada: {area}")
+                
+        #         except Exception as e:
+        #             print(f"Error al insertar área responsable {area}: {e}")
+
+        # except Exception as e:
+        #     print(f"Error general al cargar datos para Área Responsable: {e}")
         
-        # for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
-        #     try:
-        #         barrio = Barrio.get(Barrio.nombre == row['barrio'])
-        #         Ubicacion.create(
-        #         idBarrio=barrio,
-        #         direccion=row['direccion'],
-        #         latitud=row['lat'],
-        #         longitud=row['lng']           
-        #         )
-        #     except Barrio.DoesNotExist:
-        #         print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
-        #     except Exception as e:
-        #         print(f"Error inesperado al procesar la ubicación: {e}")
+        # try:
+        #     for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
+        #         try:
+        #             barrio = Barrio.get(Barrio.nombre == row['barrio'])
+
+        #             ubicacion_existente = Ubicacion.select().where(
+        #                 (Ubicacion.idBarrio == barrio) &
+        #                 (Ubicacion.direccion == row['direccion']) &
+        #                 (Ubicacion.latitud == row['lat']) &
+        #                 (Ubicacion.longitud == row['lng'])
+        #             ).first()
+                    
+        #             if ubicacion_existente:
+        #                 print(f"Ubicación ya existente: {row['direccion']} en Barrio: {row['barrio']}")
+        #                 continue
+
+        #             Ubicacion.create(
+        #                 idBarrio=barrio,
+        #                 direccion=row['direccion'],
+        #                 latitud=row['lat'],
+        #                 longitud=row['lng']
+        #             )
+        #             print(f"Ubicación creada: {row['direccion']} en Barrio: {row['barrio']}")
+                
+        #         except Barrio.DoesNotExist:
+        #             print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
+        #         except Exception as e:
+        #             print(f"Error inesperado al procesar la ubicación '{row['direccion']}': {e}")
+
+        # except Exception as e:
+        #     print(f"Error general al cargar datos para Ubicacion: {e}")
         
        
         # try:
-        #     datos_empresas = df[['licitacion_oferta_empresa','licitacion_anio', 'cuit_contratista', 'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
+        #     datos_empresas = df[['licitacion_oferta_empresa', 'licitacion_anio', 'cuit_contratista', 
+        #                     'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
         #     for _, row in datos_empresas.iterrows():
         #         try:
-        #             area_responsable = AreaResponsable.get(AreaResponsable.nombre==row['area_responsable'])
-        #             if not Empresa.select().where(Empresa.cuitContratista == row['cuit_contratista']).exists():
-        #                 Empresa.create(
-        #                     licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
-        #                     licitacionAnio=row.get('licitacion_anio', 0),
-        #                     tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
-        #                     cuitContratista=str(row['cuit_contratista'])[:13],
-        #                     areaContratacion=area_responsable,
-        #                     numeroContratacion=(row['nro_contratacion'])
-        #                 )
+        #             area_responsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
+        #             empresa_existente = Empresa.select().where(
+        #                 (Empresa.licitacionOfertaEmpresa == row['licitacion_oferta_empresa']) &
+        #                 (Empresa.cuitContratista == str(row['cuit_contratista'])[:13]) &
+        #                 (Empresa.numeroContratacion == row['nro_contratacion'])
+        #             ).first()
+                    
+        #             if empresa_existente:
+        #                 print(f"Empresa ya existente: {row['licitacion_oferta_empresa']} - CUIT: {row['cuit_contratista']}")
+        #                 continue
+
+        #             Empresa.create(
+        #                 licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
+        #                 licitacionAnio=row.get('licitacion_anio', 0),
+        #                 tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
+        #                 cuitContratista=str(row['cuit_contratista'])[:13],
+        #                 areaContratacion=area_responsable,
+        #                 numeroContratacion=row['nro_contratacion']
+        #             )
+        #             print(f"Empresa creada: {row['licitacion_oferta_empresa']} - CUIT: {row['cuit_contratista']}")
+                
         #         except KeyError as ke:
         #             print(f"Error: Falta una columna clave en el DataFrame. Detalles: {ke}")
         #         except ValueError as ve:
@@ -148,6 +227,7 @@ class GestionarObra(ABC):
         #             print(f"Error de integridad: {ie}")
         #         except Exception as e:
         #             print(f"Error inesperado al insertar empresa: {row.get('licitacion_oferta_empresa', 'Desconocido')}, {e}")
+
         # except KeyError as ke:
         #     print(f"Error: Falta una columna clave en el DataFrame principal. Detalles: {ke}")
         # except ValueError as ve:
@@ -159,52 +239,80 @@ class GestionarObra(ABC):
         # Recorrer el archivo registro por registro y dentro del for pasamos los dtos dl archivo a objetos
         # si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte     
 
-        try:  
-            for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expediente-numero', 'porcentaje_avance', 'monto_contrato', 'descripcion']].drop_duplicates().iterrows():
-                try:
-                    tipoObra = TipoObra.get(TipoObra.nombre == row['tipo'])
-                    areaResponsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
-                    etapa = Etapa.get(Etapa.nombre == row['etapa'])
-                    ubicacion = Ubicacion.get(Ubicacion.direccion == row['direccion'])
-                    montoContrato = row['monto_contrato'].replace('$', '').replace(',', '')
+        # try:  
+        #     for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expediente-numero', 'porcentaje_avance', 'monto_contrato', 'descripcion']].drop_duplicates().iterrows():
+        #         try:
+        #             tipoObra = TipoObra.get(TipoObra.nombre == row['tipo'])
+        #             areaResponsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
+        #             etapa = Etapa.get(Etapa.nombre == row['etapa'])
+        #             ubicacion = Ubicacion.get(Ubicacion.direccion == row['direccion'])
+        #             montoContrato = row['monto_contrato'].replace('$', '').replace(',', '')
                     
-                    obraExistente = Obra.select().where(
-                        Obra.nombre == row['nombre'],
-                        Obra.idUbicacion == ubicacion,
-                        Obra.idTipoObra == tipoObra,
-                        Obra.idAreaResponsable == areaResponsable,
-                        Obra.idEtapa == etapa
-                    ).first()
+        #             obraExistente = Obra.select().where(
+        #                 Obra.nombre == row['nombre'],
+        #                 Obra.idUbicacion == ubicacion,
+        #                 Obra.idTipoObra == tipoObra,
+        #                 Obra.idAreaResponsable == areaResponsable,
+        #                 Obra.idEtapa == etapa
+        #             ).first()
                     
-                    if obraExistente:
-                        print(f"La obra '{row['nombre']}' ya existe en la base de datos.")
-                        continue
+        #             if obraExistente:
+        #                 print(f"La obra '{row['nombre']}' ya existe en la base de datos.")
+        #                 continue
                     
-                    Obra.create(
-                        idTipoObra=tipoObra,
-                        idAreaResponsable=areaResponsable,
-                        idUbicacion=ubicacion,
-                        idEtapa=etapa,
-                        nombre=row['nombre'],
-                        fechaInicio=row['fecha_inicio'],
-                        fechaFinIinicial=row['fecha_fin_inicial'],
-                        plazoMeses=row['plazo_meses'],
-                        manoObra=row['mano_obra'],
-                        numeroExpediente=row['expediente-numero'],
-                        porcentajeAvance=row['porcentaje_avance'],
-                        montoContrato=montoContrato,
-                        descripcion=row['descripcion'],
-                    )
-                except TipoObra.DoesNotExist:
-                    print(f"Error: El tipo de obra '{row['tipo']}' no existe en la base de datos. Verifica los datos.")
-                except AreaResponsable.DoesNotExist:
-                    print(f"Área responsable '{row['area_responsable']}' no encontrado.")
-                except Ubicacion.DoesNotExist:
-                    print(f"Ubicación '{row['direccion']}' no encontrada.")
-                except Etapa.DoesNotExist:
-                    print(f"Etapa '{row['etapa']}' no encontrada.")
-        except Exception as e:
-            print(f"Error al cargar datos: {e}")
+        #             Obra.create(
+        #                 idTipoObra=tipoObra,
+        #                 idAreaResponsable=areaResponsable,
+        #                 idUbicacion=ubicacion,
+        #                 idEtapa=etapa,
+        #                 nombre=row['nombre'],
+        #                 fechaInicio=row['fecha_inicio'],
+        #                 fechaFinIinicial=row['fecha_fin_inicial'],
+        #                 plazoMeses=row['plazo_meses'],
+        #                 manoObra=row['mano_obra'],
+        #                 numeroExpediente=row['expediente-numero'],
+        #                 porcentajeAvance=row['porcentaje_avance'],
+        #                 montoContrato=montoContrato,
+        #                 descripcion=row['descripcion'],
+        #             )
+        #         except TipoObra.DoesNotExist:
+        #             print(f"Error: El tipo de obra '{row['tipo']}' no existe en la base de datos. Verifica los datos.")
+        #         except AreaResponsable.DoesNotExist:
+        #             print(f"Área responsable '{row['area_responsable']}' no encontrado.")
+        #         except Ubicacion.DoesNotExist:
+        #             print(f"Ubicación '{row['direccion']}' no encontrada.")
+        #         except Etapa.DoesNotExist:
+        #             print(f"Etapa '{row['etapa']}' no encontrada.")
+        # except Exception as e:
+        #     print(f"Error al cargar datos: {e}")
+
+
+    
+        # for _, row in df[['licitacion_oferta_empresa', 'nombre']].drop_duplicates().iterrows():
+        #     try:
+        #         empresa = Empresa.get_or_none(Empresa.licitacionOfertaEmpresa == row['licitacion_oferta_empresa'])
+        #         if not empresa:
+        #             print(f"Error: La empresa '{row['licitacion_oferta_empresa']}' no existe en la base de datos.")
+        #             continue
+
+        #         obra = Obra.get_or_none(Obra.nombre == row['nombre'])
+        #         if not obra:
+        #             print(f"Error: La obra '{row['nombre']}' no existe en la base de datos.")
+        #             continue
+
+        #         if not EmpresaObra.select().where(
+        #             (EmpresaObra.idEmpresa == empresa) & (EmpresaObra.idObra == obra)
+        #         ).exists():
+        #             EmpresaObra.create(idEmpresa=empresa, idObra=obra)
+        #             print(f"EmpresaObra creada: Empresa='{empresa.licitacionOfertaEmpresa}', Obra='{obra.nombre}'")
+        #         else:
+        #             print(f"EmpresaObra ya existe para Empresa='{empresa.licitacionOfertaEmpresa}', Obra='{obra.nombre}'")
+
+        #     except Exception as e:
+        #         print(f"Error al procesar EmpresaObra para Empresa='{row['licitacion_oferta_empresa']}', Obra='{row['nombre']}': {e}")
+
+        #     except Exception as e:
+        #         print(f"Error al cargar datos para EmpresaObra: {e}")
 
       
         print("Datos cargados exitosamente.")
@@ -221,4 +329,4 @@ class GestionarObra(ABC):
     
 
 prueba = GestionarObra()
-
+prueba.cargar_datos()
