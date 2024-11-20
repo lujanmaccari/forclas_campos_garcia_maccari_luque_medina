@@ -176,12 +176,12 @@ class GestionarObra(ABC):
         #                 print(f"Ubicación ya existente: {row['direccion']} en Barrio: {row['barrio']}")
         #                 continue
 
-        #             Ubicacion.create(
-        #                 idBarrio=barrio,
-        #                 direccion=row['direccion'],
-        #                 latitud=row['lat'],
-        #                 longitud=row['lng']
-        #             )
+                    # Ubicacion.create(
+                    #     idBarrio=barrio,
+                    #     direccion=row['direccion'],
+                    #     latitud=row['lat'],
+                    #     longitud=row['lng']
+                    # )
         #             print(f"Ubicación creada: {row['direccion']} en Barrio: {row['barrio']}")
                 
         #         except Barrio.DoesNotExist:
@@ -315,13 +315,50 @@ class GestionarObra(ABC):
         #         print(f"Error al cargar datos para EmpresaObra: {e}")
 
       
-        print("Datos cargados exitosamente.")
+        #print("Datos cargados exitosamente.")
         
        
 
-    @classmethod
-    def nueva_obra():
-        pass
+    # @classmethod
+    # def nueva_obra(cls):
+    #     nombre = input("ingresar el nombre de la nueva obra")
+    #     fechaDeInicio = int(input("ingresar fecha de inicio de obra"))
+    #     montoDeContrato = int(input("ingresar monto de contrato"))
+    #     nroDeExpediente = int(input("ingresar nro de expediente"))
+    #     manoDeObra = input("ingresar tipo de mano de obra")
+    # while True:
+    #     tipoObra = input("Ingrese tipo de obra: ")
+    #     if TipoObra.objects.filter(nombre=tipoObra).exists():  # Asegúrate de que "nombre" sea el campo correcto
+    #         print("El tipo de obra existe.")
+    #     else:
+    #         print("El tipo de obra no existe. Ingrese uno correcto")
+
+    #     tipoDeArea = input("ingrese el tipo de area")
+    #     if AreaResponsable.objects.filter(nombre=tipoDeArea).exists():
+    #         print("el tipo de area existe")
+    #     else:
+    #         print("el tipo de area no existe. Ingrese uno correcto")
+
+    #     ubicacion = input("ingrese la ubicacion de la obra")
+    #     if Ubicacion.objects.filter(nombre=ubicacion).exists():
+    #         print("la ubicacion es existente")
+    #     else:
+    #         print("la ubicacion no existe. Ingrese los datos correctamente")
+    
+    # nueva_obra= Obra.create(nombre=nombre, 
+    #                             fechaDeInicio=fechaDeInicio,
+    #                             montoDeContrato=montoDeContrato,
+    #                             nroDeExpediente=nroDEexpediente,
+    #                             manoDeobra=manoDeObrA
+    #                             )
+    # nueva_obra.save()
+
+        
+
+            
+
+        
+
     
     @classmethod
     def obtener_indicadores():
