@@ -51,7 +51,7 @@ class GestionarObra(ABC):
         try:
             df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")                      
             
-            columnasAEliminar = ['ba_elige', 'link_interno', 'pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4', 'estudio_ambiental_descarga', 'entorno', 'compromiso', 'destacada', 'financiamiento']
+            columnasAEliminar = ['ba_elige', 'link_interno', 'pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4', 'estudio_ambiental_descarga', 'entorno', 'compromiso','financiamiento']
             
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
             df = df.drop(columns=columnasAEliminar, axis=1)
@@ -68,7 +68,8 @@ class GestionarObra(ABC):
             df.fillna({'cuit_contratista': '30505454436'}, inplace=True)            
             df.fillna({'beneficiarios': 'vecinos'}, inplace=True)            
             df.fillna({'contratacion_tipo': 'Licitación Pública'}, inplace=True)
-            df.fillna({'licitacion_anio': '2024'}, inplace=True)            
+            df.fillna({'licitacion_anio': '2024'}, inplace=True)  
+            df.fillna({'destacada': 'NO'},inplace=True)          
             
             columnas_verificables = [col for col in df.columns if col not in columnasAEliminar]
             
@@ -275,6 +276,7 @@ class GestionarObra(ABC):
         #                 porcentajeAvance=row['porcentaje_avance'],
         #                 montoContrato=montoContrato,
         #                 descripcion=row['descripcion'],
+        #                 destacada=row['destacada']
         #             )
         #         except TipoObra.DoesNotExist:
         #             print(f"Error: El tipo de obra '{row['tipo']}' no existe en la base de datos. Verifica los datos.")
