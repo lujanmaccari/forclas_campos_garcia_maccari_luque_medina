@@ -41,7 +41,7 @@ class GestionarObra(ABC):
     @classmethod
     def mapear_orm(cls):
         try:
-            sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, EmpresaObra, Barrio])
+            sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, Barrio])
             print("Tablas creadas exitosamente.")
         except pw.OperationalError as e:
             print(f"Error al crear las tablas: {e}")
