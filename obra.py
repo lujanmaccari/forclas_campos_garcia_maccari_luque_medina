@@ -1,6 +1,6 @@
 from peewee import *
 from datetime import datetime
-from modelo_orm import Obra, Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Barrio
+from modelo_orm import Obra, Etapa, Empresa
 
 class ObraManager:
     def __init__(self,obraId): 
