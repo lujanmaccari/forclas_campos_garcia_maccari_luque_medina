@@ -3,12 +3,12 @@ from datetime import datetime
 from modelo_orm import Obra, Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Barrio
 
 class ObraManager:
-    def __init__(self, obra_id):
+    def __init__(self,obraId): 
         try:
-            self.obra = Obra.select().where(Obra.idObra == obra_id).get()
+            self.obra = Obra.select().where(Obra.idObra == obraId).get()
             print(f"Obra encontrada: {self.obra.nombre}")
         except DoesNotExist:
-            raise ValueError(f"No se encontró la obra con ID {obra_id}.")
+            raise ValueError(f"No se encontró la obra con ID {obraId}.")
     
     def nuevo_proyecto(self):
         try:
@@ -19,52 +19,61 @@ class ObraManager:
         except Exception as e:
             print(f"Error al configurar la obra como nuevo proyecto {e}")
     
-    def iniciar_contratacion(self, tipo_contratacion, nro_contratacion):
+    def iniciar_contratacion(self):
+        tipoContratacion = input("ingrese el tipo de contratacion")
+        nroContratacion = input("ingrese el numero de contratacion")
         try:
-            if not Empresa.select().where(Empresa.tipoContratacion == tipo_contratacion).exists():
-                raise ValueError(f"TipoContratacion {tipo_contratacion} no existe en la base de datos.")
+            if not Empresa.select().where(Empresa.tipoContratacion == tipoContratacion).exists():
+                raise ValueError(f"TipoContratacion {tipoContratacion} no existe en la base de datos.")
             
             etapa, _ = Etapa.get_or_create(nombre="Contratación")
             self.obra.idEtapa = etapa.idEtapa
-            self.obra.tipoContratacion = tipo_contratacion
-            self.obra.numeroExpediente = nro_contratacion
+            self.obra.tipoContratacion = tipoContratacion
+            self.obra.numeroExpediente = nroContratacion
         
             self.obra.save()
-            print(f"La contratación para la obra {self.obra.nombre} ha sido iniciada como {tipo_contratacion}")
+            print(f"La contratación para la obra {self.obra.nombre} ha sido iniciada como {tipoContratacion}")
         except Exception as e:
             print(f"Error al iniciar la contratación {e}")
 
-    def adjudicar_obra(self, empresa_nombre, nro_expediente):
+    def adjudicar_obra(self):
+        empresaNombre = input("ingrese el nombre de la empresa")
+        nroExpediente = input("Ingrese el número de expediente: ")
         try:
             
-            if not Empresa.select().where(Empresa.licitacionOfertaEmpresa == empresa_nombre).exists():
-                raise ValueError(f"Empresa {empresa_nombre} no existe en la base de datos.")
+            if not Empresa.select().where(Empresa.licitacionOfertaEmpresa == empresaNombre).exists():
+                raise ValueError(f"Empresa {empresaNombre} no existe en la base de datos.")
 
-            if Obra.select().where(Obra.numeroExpediente == nro_expediente).exists():
+            if Obra.select().where(Obra.numeroExpediente == nroExpediente).exists():
                 raise ValueError("El número de expediente ya existe en la base de datos.")
             
             etapa, _ = Etapa.get_or_create(nombre="Adjudicada")
-            empresa, _ = Empresa.get_or_create(licitacionOfertaEmpresa=empresa_nombre)
+            empresa, _ = Empresa.get_or_create(licitacionOfertaEmpresa=empresaNombre)
             self.obra.idEtapa = etapa.idEtapa
-            self.obra.numeroExpediente = nro_expediente
+            self.obra.numeroExpediente = nroExpediente
             self.obra.idEmpresa = empresa.idEmpresa 
 
             self.obra.save()
-            print(f"La obra {self.obra.nombre} fue adjudicada a la empresa {empresa_nombre}, con el número de expediente {nro_expediente}")
+            print(f"La obra {self.obra.nombre} fue adjudicada a la empresa {empresaNombre}, con el número de expediente {nroExpediente}")
         except Exception as e:
             print(f"Error al adjudicar la obra {e}")
     
-    def iniciar_obra(self, fecha_inicio, fecha_fin, mano_obra, destacada, fuente_financiamiento ):
+    def iniciar_obra(self):
+        fechaInicio = input("ingrese la fecha de inicio en formato DD/MM/YYYY")
+        fechaFin = input("ingrese la fecha de fin en formato DD/MM/YYYY")
+        manoObra = int(input("ingrese la mano de obra"))
+        destacada = input("ingrese si es destacada")
+        fuenteFinanciamiento = input("ingrese la fuente de financiamiento")
         try:
-            if mano_obra < 0 and not isinstance(int, mano_obra):
+            if manoObra < 0 and not isinstance(int, manoObra):
                 raise ValueError("El valor de mano debe ser un número entero positivo")
             
-            if not Empresa.select().where(Empresa.licitacionOfertaEmpresa == fuente_financiamiento).exists():
+            if not Empresa.select().where(Empresa.licitacionOfertaEmpresa == fuenteFinanciamiento).exists():
              raise ValueError("La fuente de financiamiento no existe en la base de datos.")
          
             try:
-                fechaInicioFormateada = datetime.strptime(fecha_inicio, "%d/%m/%Y").date()
-                fechaFinFormateada = datetime.strptime(fecha_fin, "%d/%m/%Y").date()
+                fechaInicioFormateada = datetime.strptime(fechaInicio, "%d/%m/%Y").date()
+                fechaFinFormateada = datetime.strptime(fechaFin, "%d/%m/%Y").date()
             except ValueError:
                 raise ValueError("Las fechas deben estar en formato DD/MM/YYYY")
             
@@ -75,37 +84,40 @@ class ObraManager:
             self.obra.destacada = destacada
             self.obra.fechaInicio = fechaInicioFormateada
             self.obra.fechaFinIinicial = fechaFinFormateada
-            self.obra.fuente_financiamiento = fuente_financiamiento
-            self.obra.manoObra = mano_obra
+            self.obra.fuente_financiamiento = fuenteFinanciamiento
+            self.obra.manoObra = manoObra
             self.obra.idEtapa = etapa.idEtapa
             self.obra.save()
             print(f"La obra '{self.obra.nombre}' ha iniciado su ejecución")
         except Exception as e:
             print(f"Error al iniciar la obra: {e}")
 
-    def actualizar_porcentaje_avance(self, nuevo_porcentaje):
+    def actualizar_porcentaje_avance(self):
+        nuevoPorcentaje = float(input("Ingrese el nuevo porcentaje de avance (0-100): "))
         try:
-            if not 0 <= nuevo_porcentaje <= 100:
+            if not 0 <= nuevoPorcentaje <= 100:
                 raise ValueError("El porcentaje debe estar entre 0 y 100")
-            self.obra.porcentajeAvance =  nuevo_porcentaje
+            self.obra.porcentajeAvance =  nuevoPorcentaje
             self.obra.save()
-            print(f"Porcentaje de avance actualizado a {nuevo_porcentaje}% para '{self.obra.nombre}")
+            print(f"Porcentaje de avance actualizado a {nuevoPorcentaje}% para '{self.obra.nombre}")
         except Exception as e:
             print(f"Error al actualizar el porcentaje de avance: {e}")
             
-    def incrementar_plazo(self, meses_extra):
+    def incrementar_plazo(self):
+        mesesExtra = int(input("Ingrese la cantidad de meses adicionales: "))
         try:
-            self.obra.plazoMeses += meses_extra
+            self.obra.plazoMeses += mesesExtra
             self.obra.save()
-            print(f"El plazo de la obra '{self.obra.nombre}' ha sido incrementado en {meses_extra} ")
+            print(f"El plazo de la obra '{self.obra.nombre}' ha sido incrementado en {mesesExtra} ")
         except Exception as e:
             print(f"Error al incrementar el plazo: {e}")
     
-    def incrementar_mano_obra(self, cantidad_extra):
+    def incrementar_mano_obra(self):
+        cantidadExtra = int(input("Ingrese la cantidad de mano de obra adicional: "))
         try:
-            self.obra.manoObra += cantidad_extra
+            self.obra.manoObra += cantidadExtra
             self.obra.save()
-            print(f"La mano de obra de '{self.obra.nombre}' aumentó a {cantidad_extra}")
+            print(f"La mano de obra de '{self.obra.nombre}' aumentó a {cantidadExtra}")
         except Exception as e:
             print(f"Error al incrementar la mano de obra: {e}")
 
