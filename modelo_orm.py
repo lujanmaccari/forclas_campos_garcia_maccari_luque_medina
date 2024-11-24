@@ -84,7 +84,7 @@ class Obra(BaseModel):
     porcentajeAvance = IntegerField(null=False, constraints=[Check('porcentajeAvance >= 0 AND porcentajeAvance <= 100')])
     montoContrato = IntegerField(null=False, constraints=[Check('montoContrato >= 0')])
     descripcion = CharField(null=False, max_length=500, constraints=[Check('length(descripcion) > 0')])
-
+    destacada = CharField(null=False, max_length=5)
     class Meta:
        db_table = 'Obra'
 
