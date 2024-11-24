@@ -69,6 +69,7 @@ class Ubicacion(BaseModel):
 class Obra(BaseModel):
     # tiene que tener el atributo destacada
     idObra = AutoField()
+    idEmpresa = ForeignKeyField(Empresa, backref='empresa')
     nombre = CharField(null=False, max_length=200, constraints=[Check('length(nombre) > 0')])
     idTipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
     idAreaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
@@ -87,9 +88,3 @@ class Obra(BaseModel):
     class Meta:
        db_table = 'Obra'
 
-class EmpresaObra(BaseModel):
-    idEmpresa = ForeignKeyField(Empresa, backref='empresa')
-    idObra = ForeignKeyField(Obra, backref='obra')
-
-    class Meta:
-       db_table = 'EmpresaObra'
