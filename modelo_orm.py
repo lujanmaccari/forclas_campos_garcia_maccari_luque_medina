@@ -12,6 +12,8 @@ except OperationalError as e:
 class BaseModel(Model):
     class Meta:
         database = sqlite_crear
+# sacar el 'id' delante de las FK, se agrega por defecto el "_id" en el nombre
+#  todos los nombres de las tablas en plural
 
 class Etapa(BaseModel):
     idEtapa = AutoField()
@@ -65,6 +67,7 @@ class Ubicacion(BaseModel):
        db_table = 'Ubicacion'
 
 class Obra(BaseModel):
+    # tiene que tener el atributo destacada
     idObra = AutoField()
     nombre = CharField(null=False, max_length=200, constraints=[Check('length(nombre) > 0')])
     idTipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
@@ -75,6 +78,7 @@ class Obra(BaseModel):
     plazoMeses = IntegerField(null=False, constraints=[Check('plazoMeses > 0')])
     manoObra = IntegerField(null=False, constraints=[Check('manoObra >= 0')])
     idEtapa = ForeignKeyField(Etapa, backref='etapa') 
+    # numeroExpediente tiene que ser unico y str
     numeroExpediente = IntegerField(null=False, unique=True)
     porcentajeAvance = IntegerField(null=False, constraints=[Check('porcentajeAvance >= 0 AND porcentajeAvance <= 100')])
     montoContrato = IntegerField(null=False, constraints=[Check('montoContrato >= 0')])
