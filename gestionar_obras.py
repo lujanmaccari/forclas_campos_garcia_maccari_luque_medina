@@ -3,7 +3,7 @@ from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaRespon
 import pandas as pd
 from abc import ABC 
 from abc import abstractmethod
-
+import numpy as np
 
 class GestionarObra(ABC):
     
@@ -319,51 +319,102 @@ class GestionarObra(ABC):
         
        
 
-    # @classmethod
-    # def nueva_obra(cls):
-    #     nombre = input("ingresar el nombre de la nueva obra")
-    #     fechaDeInicio = int(input("ingresar fecha de inicio de obra"))
-    #     montoDeContrato = int(input("ingresar monto de contrato"))
-    #     nroDeExpediente = int(input("ingresar nro de expediente"))
-    #     manoDeObra = input("ingresar tipo de mano de obra")
-    # while True:
-    #     tipoObra = input("Ingrese tipo de obra: ")
-    #     if TipoObra.objects.filter(nombre=tipoObra).exists():  # Asegúrate de que "nombre" sea el campo correcto
-    #         print("El tipo de obra existe.")
-    #     else:
-    #         print("El tipo de obra no existe. Ingrese uno correcto")
+    @classmethod
+    def nueva_obra(cls):
+        try:
+            nombre = input("Ingresar el nombre de la nueva obra: ")          
+            try:
+                fechaDeInicio = int(input("Ingresar fecha de inicio de obra (solo año, en formato AAAA): "))
+            except ValueError:
+                print("Error: La fecha de inicio debe ser un número entero.")
+                return
+            try:
+                montoDeContrato = int(input("Ingresar monto de contrato: "))
+            except ValueError:
+                print("Error: El monto de contrato debe ser un número entero.")
+                return
+            try:
+                nroDeExpediente = int(input("Ingresar nro de expediente: "))
+            except ValueError:
+                print("Error: El número de expediente debe ser un número entero.")
+                return
+            manoDeObra = input("Ingresar tipo de mano de obra: ")
+            while True:
+                tipoObra = input("Ingrese tipo de obra: ")
+                try:
+                    if TipoObra.objects.filter(nombre=tipoObra).exists():
+                        print("El tipo de obra existe.")
+                        break
+                    else:
+                        print("El tipo de obra no existe. Ingrese uno correcto.")
+                except Exception as e:
+                    print(f"Error al validar el tipo de obra: {e}")
+                    return
+            while True:
+                tipoDeArea = input("Ingrese el tipo de área: ")
+                try:
+                    if AreaResponsable.objects.filter(nombre=tipoDeArea).exists():
+                        print("El tipo de área existe.")
+                        break
+                    else:
+                        print("El tipo de área no existe. Ingrese uno correcto.")
+                except Exception as e:
+                    print(f"Error al validar el tipo de área: {e}")
+                    return
+            while True:
+                ubicacion = input("Ingrese la ubicación de la obra: ")
+                try:
+                    if Ubicacion.objects.filter(nombre=ubicacion).exists():
+                        print("La ubicación es existente.")
+                        break
+                    else:
+                        print("La ubicación no existe. Ingrese los datos correctamente.")
+                except Exception as e:
+                    print(f"Error al validar la ubicación: {e}")
+                    return
+            try:
+                nueva_obra = Obra.create(
+                    nombre=nombre, 
+                    fechaDeInicio=fechaDeInicio,
+                    montoDeContrato=montoDeContrato,
+                    nroDeExpediente=nroDeExpediente,
+                    manoDeObra=manoDeObra
+                )
+                nueva_obra.save()
+                print("Obra creada exitosamente.")
+            except Exception as e:
+                print(f"Error al crear la nueva obra: {e}")
+        except Exception as e:
+            print(f"Ocurrió un error inesperado: {e}")
 
-    #     tipoDeArea = input("ingrese el tipo de area")
-    #     if AreaResponsable.objects.filter(nombre=tipoDeArea).exists():
-    #         print("el tipo de area existe")
-    #     else:
-    #         print("el tipo de area no existe. Ingrese uno correcto")
 
-    #     ubicacion = input("ingrese la ubicacion de la obra")
-    #     if Ubicacion.objects.filter(nombre=ubicacion).exists():
-    #         print("la ubicacion es existente")
-    #     else:
-    #         print("la ubicacion no existe. Ingrese los datos correctamente")
-    
-    # nueva_obra= Obra.create(nombre=nombre, 
-    #                             fechaDeInicio=fechaDeInicio,
-    #                             montoDeContrato=montoDeContrato,
-    #                             nroDeExpediente=nroDEexpediente,
-    #                             manoDeobra=manoDeObrA
-    #                             )
-    # nueva_obra.save()
-
-        
-
-            
-
-        
-
-    
     @classmethod
     def obtener_indicadores():
-        pass
+        print("\nListado de todas las áreas responsables:")
+        areas = AreaResponsable.select()
+        for area in areas:
+            print(f"- {area.nombre}")
+
+        print("\nListado de todos los tipos de obra:")
+        tipos_obra = TipoObra.select()
+        for tipo in tipos_obra:
+            print(f"- {tipo.nombre}")
+
+        print("\nCantidad de obras por etapa:")
+        etapas = Etapa.select()
+        for etapa in etapas:
+            cantidad = Obra.select().where(Obra.idEtapa == etapa).count()
+            print(f"- {etapa.nombre}: {cantidad} obras")
+
+        print("\nCantidad de obras y monto total de inversión por tipo de obra:")
+        tipos_obra = TipoObra.select()
+        for tipo in tipos_obra:
+            obras_tipo = Obra.select().where(Obra.idTipoObra == tipo)
+            cantidad = obras_tipo.count()
+            montos = [obra.montoContrato for obra in obras_tipo]
+            monto_total = np.sum(montos) if montos else 0
+            print(f"- {tipo.nombre}: {cantidad} obras, Inversión total: ${monto_total}")
     
 
 prueba = GestionarObra()
-prueba.cargar_datos()
+
