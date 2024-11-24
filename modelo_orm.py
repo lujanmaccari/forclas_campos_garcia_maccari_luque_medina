@@ -18,7 +18,7 @@ class Etapa(BaseModel):
     nombre = CharField(unique=True, null=False, max_length=30, constraints=[Check('length(nombre) > 0')])
 
     class Meta:
-        db_table = 'Etapa'
+        db_table = 'Etapas'
 
 class Empresa(BaseModel):
     idEmpresa = AutoField()
