@@ -12,8 +12,6 @@ except OperationalError as e:
 class BaseModel(Model):
     class Meta:
         database = sqlite_crear
-# sacar el 'id' delante de las FK, se agrega por defecto el "_id" en el nombre
-#  todos los nombres de las tablas en plural
 
 class Etapa(BaseModel):
     idEtapa = AutoField()
@@ -32,7 +30,7 @@ class Empresa(BaseModel):
     numeroContratacion = IntegerField(null=False, unique=True)
 
     class Meta:
-        db_table = 'Empresa'
+        db_table = 'Empresas'
 
 class Barrio(BaseModel):
     idBarrio = AutoField()
@@ -40,51 +38,50 @@ class Barrio(BaseModel):
     comuna = CharField(null=False, max_length=4, constraints=[Check('length(comuna) > 0')])
 
     class Meta:
-       db_table = 'Barrio'
+       db_table = 'Barrios'
 
 class TipoObra(BaseModel):
     idTipoObra = AutoField()
     nombre = CharField(unique=True, null=False, max_length=100, constraints=[Check('length(nombre) > 0')])
     
     class Meta:
-       db_table = 'TipoObra'
+       db_table = 'TipoObras'
 
 class AreaResponsable(BaseModel):
     idAreaResponsable = AutoField()
     nombre = CharField(unique=True, null=False, max_length=100, constraints=[Check('length(nombre) > 0')])
 
     class Meta:
-       db_table = 'AreaResponsable'
+       db_table = 'AreaResponsables'
 
 class Ubicacion(BaseModel):
     idUbicacion = AutoField()
-    idBarrio = ForeignKeyField(Barrio, backref='barrio')
+    barrio = ForeignKeyField(Barrio, backref='barrio')
     direccion = CharField(null=False, max_length=150, constraints=[Check('length(direccion) > 0')])
     latitud = FloatField()
     longitud = FloatField()
 
     class Meta:
-       db_table = 'Ubicacion'
+       db_table = 'Ubicaciones'
 
 class Obra(BaseModel):
-    # tiene que tener el atributo destacada
     idObra = AutoField()
-    idEmpresa = ForeignKeyField(Empresa, backref='empresa')
+    empresa = ForeignKeyField(Empresa, backref='empresa')
     nombre = CharField(null=False, max_length=200, constraints=[Check('length(nombre) > 0')])
-    idTipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
-    idAreaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
-    idUbicacion = ForeignKeyField(Ubicacion, backref='ubicacion') 
+    tipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
+    areaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
+    ubicacion = ForeignKeyField(Ubicacion, backref='ubicacion') 
     fechaInicio = DateField(null=False) 
     fechaFinIinicial = DateField(null=False)
     plazoMeses = IntegerField(null=False, constraints=[Check('plazoMeses > 0')])
     manoObra = IntegerField(null=False, constraints=[Check('manoObra >= 0')])
-    idEtapa = ForeignKeyField(Etapa, backref='etapa') 
-    # numeroExpediente tiene que ser unico y str
-    numeroExpediente = IntegerField(null=False, unique=True)
+    etapa = ForeignKeyField(Etapa, backref='etapa') 
+    numeroExpediente = CharField(null=False, unique=True)
     porcentajeAvance = IntegerField(null=False, constraints=[Check('porcentajeAvance >= 0 AND porcentajeAvance <= 100')])
     montoContrato = IntegerField(null=False, constraints=[Check('montoContrato >= 0')])
     descripcion = CharField(null=False, max_length=500, constraints=[Check('length(descripcion) > 0')])
     destacada = CharField(null=False, max_length=5)
+    
     class Meta:
-       db_table = 'Obra'
+       db_table = 'Obras'
 

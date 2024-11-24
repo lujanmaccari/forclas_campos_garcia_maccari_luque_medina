@@ -1,10 +1,11 @@
 import peewee as pw 
 from peewee import fn
-from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaResponsable, TipoObra,Barrio
+from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaResponsable, TipoObra, Barrio
 import pandas as pd
 from abc import ABC 
-from abc import abstractmethod
 import numpy as np
+import random 
+import string
 
 class GestionarObra(ABC):
     
@@ -62,7 +63,7 @@ class GestionarObra(ABC):
             df.fillna({'monto_contrato': '300.000.000'}, inplace=True)            
             df.fillna({'porcentaje_avance': '0'}, inplace=True)            
             df.fillna({'fecha_fin_inicial': '31/12/2024'}, inplace=True)            
-            df.fillna({'expediente-numero': '46213850'}, inplace=True)            
+            df['expediente-numero'] = df['expediente-numero'].apply(lambda x: ''.join(random.choices(string.ascii_uppercase + string.digits, k=9)) if pd.isnull(x) else x)
             df.fillna({'mano_obra': '10'}, inplace=True)            
             df.fillna({'nro_contratacion': '1816/SIGAF/2014'}, inplace=True)            
             df.fillna({'cuit_contratista': '30505454436'}, inplace=True)            
