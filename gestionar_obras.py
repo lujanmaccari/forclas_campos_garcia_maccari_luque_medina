@@ -300,20 +300,7 @@ class GestionarObra(ABC):
         #             print(f"Error: La obra '{row['nombre']}' no existe en la base de datos.")
         #             continue
 
-        #         if not EmpresaObra.select().where(
-        #             (EmpresaObra.idEmpresa == empresa) & (EmpresaObra.idObra == obra)
-        #         ).exists():
-        #             EmpresaObra.create(idEmpresa=empresa, idObra=obra)
-        #             print(f"EmpresaObra creada: Empresa='{empresa.licitacionOfertaEmpresa}', Obra='{obra.nombre}'")
-        #         else:
-        #             print(f"EmpresaObra ya existe para Empresa='{empresa.licitacionOfertaEmpresa}', Obra='{obra.nombre}'")
-
-        #     except Exception as e:
-        #         print(f"Error al procesar EmpresaObra para Empresa='{row['licitacion_oferta_empresa']}', Obra='{row['nombre']}': {e}")
-
-        #     except Exception as e:
-        #         print(f"Error al cargar datos para EmpresaObra: {e}")
-
+        #         
       
         #print("Datos cargados exitosamente.")
         

@@ -69,6 +69,7 @@ class Ubicacion(BaseModel):
 class Obra(BaseModel):
     # tiene que tener el atributo destacada
     idObra = AutoField()
+    idEmpresa = ForeignKeyField(Empresa, backref='empresa')
     nombre = CharField(null=False, max_length=200, constraints=[Check('length(nombre) > 0')])
     idTipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
     idAreaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
@@ -87,9 +88,24 @@ class Obra(BaseModel):
     class Meta:
        db_table = 'Obra'
 
-class EmpresaObra(BaseModel):
-    idEmpresa = ForeignKeyField(Empresa, backref='empresa')
-    idObra = ForeignKeyField(Obra, backref='obra')
+#class EmpresaObra(BaseModel):
+    #idEmpresa = ForeignKeyField(Empresa, backref='empresa')
+    #idObra = ForeignKeyField(Obra, backref='obra')
 
-    class Meta:
-       db_table = 'EmpresaObra'
+    #class Meta:
+       #db_table = 'EmpresaObra'
+
+#puse aca lo de empresaObra de gestionarObra (para no perderlo)
+            #if not EmpresaObra.select().where(
+        #             (EmpresaObra.idEmpresa == empresa) & (EmpresaObra.idObra == obra)
+        #         ).exists():
+        #             EmpresaObra.create(idEmpresa=empresa, idObra=obra)
+        #             print(f"EmpresaObra creada: Empresa='{empresa.licitacionOfertaEmpresa}', Obra='{obra.nombre}'")
+        #         else:
+        #             print(f"EmpresaObra ya existe para Empresa='{empresa.licitacionOfertaEmpresa}', Obra='{obra.nombre}'")
+
+        #     except Exception as e:
+        #         print(f"Error al procesar EmpresaObra para Empresa='{row['licitacion_oferta_empresa']}', Obra='{row['nombre']}': {e}")
+
+        #     except Exception as e:
+        #         print(f"Error al cargar datos para EmpresaObra: {e}")
