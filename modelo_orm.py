@@ -35,7 +35,7 @@ class Empresa(BaseModel):
 class Barrio(BaseModel):
     idBarrio = AutoField()
     nombre = CharField(null=False, unique=True, max_length=100, constraints=[Check('length(nombre) > 0')])
-    comuna = CharField(null=False, max_length=4, constraints=[Check('length(comuna) > 0')])
+    comuna = IntegerField(null=False)
 
     class Meta:
        db_table = 'Barrios'
@@ -84,4 +84,3 @@ class Obra(BaseModel):
     
     class Meta:
        db_table = 'Obras'
-

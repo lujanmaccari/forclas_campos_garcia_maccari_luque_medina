@@ -12,7 +12,7 @@ class GestionarObra(ABC):
     @classmethod
     def extraer_datos(cls, ruta_dataset):
         try:
-            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="latin-1")
+            df = pd.read_csv("probar.csv", sep=";", encoding="latin-1")
             print("Datos extraídos con éxito.")
             return df
         except FileNotFoundError as e:
@@ -50,12 +50,12 @@ class GestionarObra(ABC):
     @classmethod
     def limpiar_datos(cls):
         try:
-            df = pd.read_csv("observatorio-de-obras-urbanas.csv", sep=";", encoding="utf8")                      
+            df = GestionarObra.extraer_datos("probar.csv")               
             
-            columnasAEliminar = ['ba_elige', 'link_interno', 'pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4', 'estudio_ambiental_descarga', 'entorno', 'compromiso','financiamiento']
+            # columnasAEliminar = ['ba_elige', 'link_interno', 'pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4', 'estudio_ambiental_descarga', 'entorno', 'compromiso','financiamiento']
             
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-            df = df.drop(columns=columnasAEliminar, axis=1)
+            # df = df.drop(columns=columnasAEliminar, axis=1)
             
             df.fillna({'nombre': 'Area ambiental'}, inplace=True)            
             df.fillna({'tipo_obra': 'Salud'}, inplace=True)            
@@ -63,7 +63,7 @@ class GestionarObra(ABC):
             df.fillna({'monto_contrato': '300.000.000'}, inplace=True)            
             df.fillna({'porcentaje_avance': '0'}, inplace=True)            
             df.fillna({'fecha_fin_inicial': '31/12/2024'}, inplace=True)            
-            df['expediente-numero'] = df['expediente-numero'].apply(lambda x: ''.join(random.choices(string.ascii_uppercase + string.digits, k=9)) if pd.isnull(x) else x)
+            df['expedientenumero'] = df['expedientenumero'].apply(lambda x: ''.join(random.choices(string.ascii_uppercase + string.digits, k=9)) if pd.isnull(x) else x)
             df.fillna({'mano_obra': '10'}, inplace=True)            
             df.fillna({'nro_contratacion': '1816/SIGAF/2014'}, inplace=True)            
             df.fillna({'cuit_contratista': '30505454436'}, inplace=True)            
@@ -72,9 +72,9 @@ class GestionarObra(ABC):
             df.fillna({'licitacion_anio': '2024'}, inplace=True)  
             df.fillna({'destacada': 'NO'},inplace=True)          
             
-            columnas_verificables = [col for col in df.columns if col not in columnasAEliminar]
+            # columnas_verificables = [col for col in df.columns if col not in columnasAEliminar]
             
-            df = df.dropna(subset=columnas_verificables, how='any')
+            # df = df.dropna(subset=columnas_verificables, how='any')
             
             df.to_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8", index=False)
                         
@@ -87,69 +87,77 @@ class GestionarObra(ABC):
     def cargar_datos(cls):
         df = GestionarObra.limpiar_datos()    
 
-        # try:
-        #     datosTipoObra = list(df['tipo'].unique())
-        #     for tipo in datosTipoObra:
-        #         try:
-        #             tipo_existente = TipoObra.select().where(TipoObra.nombre == tipo).first()
+        try:
+            datosTipoObra = list(df['tipo'].unique())
+            for tipo in datosTipoObra:
+                try:
+                    tipo_existente = TipoObra.select().where(TipoObra.nombre == tipo).first()
                     
-        #             if tipo_existente:
-        #                 print(f"Tipo de obra ya existente: {tipo}")
-        #                 continue
+                    if tipo_existente:
+                        print(f"Tipo de obra ya existente: {tipo}")
+                        continue
 
-        #             tipo_obra = TipoObra.create(nombre=tipo)
-        #             tipo_obra.save()
-        #             print(f"Tipo de obra creado: {tipo}")
+                    tipo_obra = TipoObra.create(nombre=tipo)
+                    tipo_obra.save()
+                    print(f"Tipo de obra creado: {tipo}")
                 
-        #         except Exception as e:
-        #             print(f"Error al procesar el tipo de obra '{tipo}': {e}")
+                except Exception as e:
+                    print(f"Error al procesar el tipo de obra '{tipo}': {e}")
 
-        # except Exception as e:
-        #     print(f"Error general al cargar datos para TipoObra: {e}")
+        except Exception as e:
+            print(f"Error general al cargar datos para TipoObra: {e}")
 
         try:
             datosEtapa = list(df['etapa'].unique())
+            
             for etapa in datosEtapa:
                 try:
-                    etapa_existente = Etapa.select().where(Etapa.nombre == etapa).first()
-                    
-                    if etapa.lower() == "en obra":
-                        etapa = "en ejecución"
-
-                    if etapa_existente:
-                        print(f"Etapa ya existente: {etapa}")
-                        continue
-                    
-                    nueva_etapa = Etapa.create(nombre=etapa)
-                    nueva_etapa.save()
-                    print(f"Etapa creada: {etapa}")
-
-                    
+                    etapaNormalizada = etapa.strip().lower()
                 
+                    if etapaNormalizada in ["en obra", "en ejecución"]:
+                        etapaNormalizada = "en ejecución"
+
+                    etapaExistente = Etapa.select().where(fn.LOWER(Etapa.nombre) == etapaNormalizada).first()
+                
+                    if etapaExistente:
+                        print(f"Etapa ya existente: {etapaNormalizada}")
+                    else:
+                        nueva_etapa = Etapa.create(nombre=etapaNormalizada.title())
+                        nueva_etapa.save()
+                        print(f"Etapa creada: {etapaNormalizada.title()}")
+                        
                 except Exception as e:
                     print(f"Error al procesar la etapa '{etapa}': {e}")
+                    
+        except Exception as e:
+                print(f"Error general al cargar datos para Etapa: {e}")
+       
+        try:
+            for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
+                try:
+                    
+                    barrio = row['barrio']
+                    comuna = row['comuna']
+                    
+                    if not barrio or not comuna:
+                        print("Datos de barrio o comuna faltantes. No se puede insertar.")
+                        continue
+                    
+                    # Verificar si el barrio ya existe en la base de datos
+                    barrio_existente = Barrio.select().where(Barrio.nombre == barrio).first()
+                    
+                    if barrio_existente:
+                        print(f"Barrio ya existente: {barrio} - Comuna: {barrio_existente.comuna}")
+                        continue
+
+                    Barrio.create(nombre=barrio, comuna=comuna)
+                    print(f"Barrio creado: {barrio} - Comuna: {comuna}")
+                
+                except Exception as e:
+                    print(f"Error al insertar barrio {barrio}: {e}")
 
         except Exception as e:
-            print(f"Error general al cargar datos para Etapa: {e}")
-       
-        # try:
-        #     for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
-        #         try:
-        #             # Verificar si el barrio ya existe en la base de datos
-        #             barrio_existente = Barrio.select().where(Barrio.nombre == row['barrio']).first()
-                    
-        #             if barrio_existente:
-        #                 print(f"Barrio ya existente: {row['barrio']} - Comuna: {barrio_existente.comuna}")
-        #                 continue
-
-        #             Barrio.create(nombre=row['barrio'], comuna=row['comuna'])
-        #             print(f"Barrio creado: {row['barrio']} - Comuna: {row['comuna']}")
-                
-        #         except Exception as e:
-        #             print(f"Error al insertar barrio {row['barrio']}: {e}")
-
-        # except Exception as e:
-        #     print(f"Error general al cargar datos para Barrio: {e}")
+            print(f"Error general al cargar datos para Barrio: {e}")
 
         # try:
         #     for area in df['area_responsable'].unique():
@@ -248,7 +256,7 @@ class GestionarObra(ABC):
         # si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte     
 
         # try:  
-        #     for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expediente-numero', 'porcentaje_avance', 'monto_contrato', 'descripcion']].drop_duplicates().iterrows():
+        #     for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expedientenumero', 'porcentaje_avance', 'monto_contrato', 'descripcion']].drop_duplicates().iterrows():
         #         try:
         #             tipoObra = TipoObra.get(TipoObra.nombre == row['tipo'])
         #             areaResponsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
@@ -278,7 +286,7 @@ class GestionarObra(ABC):
         #                 fechaFinIinicial=row['fecha_fin_inicial'],
         #                 plazoMeses=row['plazo_meses'],
         #                 manoObra=row['mano_obra'],
-        #                 numeroExpediente=row['expediente-numero'],
+        #                 numeroExpediente=row['expedientenumero'],
         #                 porcentajeAvance=row['porcentaje_avance'],
         #                 montoContrato=montoContrato,
         #                 descripcion=row['descripcion'],
@@ -475,5 +483,8 @@ class GestionarObra(ABC):
             
 prueba = GestionarObra()
 # prueba.obtener_indicadores()
-prueba.cargar_datos()
-
+# prueba.extraer_datos('probar.csv')
+# prueba.conectar_db()
+# prueba.mapear_orm()
+# prueba.limpiar_datos()
+# prueba.cargar_datos()
