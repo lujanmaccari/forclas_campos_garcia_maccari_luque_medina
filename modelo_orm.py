@@ -25,9 +25,9 @@ class Empresa(BaseModel):
     licitacionOfertaEmpresa = CharField(null=False, max_length=150, constraints=[Check('length(licitacionOfertaEmpresa) > 0')])
     licitacionAnio = IntegerField(null=False, constraints=[Check('licitacionAnio >= 2010')])
     tipoContratacion = CharField(null=False, max_length=100, constraints=[Check('length(tipoContratacion) > 0')])
-    cuitContratista = CharField(null=False, unique=True, max_length=11, constraints=[Check('length(cuitContratista) == 11')])
+    cuitContratista = CharField(null=False, max_length=11, constraints=[Check('length(cuitContratista) == 11')])
     areaContratacion = CharField(null=False, max_length=100, constraints=[Check('length(areaContratacion) > 0')])
-    numeroContratacion = IntegerField(null=False, unique=True)
+    numeroContratacion = IntegerField(null=False)
 
     class Meta:
         db_table = 'Empresas'
@@ -66,8 +66,8 @@ class Ubicacion(BaseModel):
 
 class Obra(BaseModel):
     idObra = AutoField()
-    empresa = ForeignKeyField(Empresa, backref='empresa')
     nombre = CharField(null=False, max_length=200, constraints=[Check('length(nombre) > 0')])
+    empresa = ForeignKeyField(Empresa, backref='empresa')
     tipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
     areaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
     ubicacion = ForeignKeyField(Ubicacion, backref='ubicacion') 

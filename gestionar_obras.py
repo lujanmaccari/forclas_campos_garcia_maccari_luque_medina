@@ -12,7 +12,7 @@ class GestionarObra(ABC):
     @classmethod
     def extraer_datos(cls, ruta_dataset):
         try:
-            df = pd.read_csv("probar.csv", sep=";", encoding="latin-1")
+            df = pd.read_csv("Nueva base corregida.csv", sep=";", encoding="latin-1")
             print("Datos extraídos con éxito.")
             return df
         except FileNotFoundError as e:
@@ -50,12 +50,8 @@ class GestionarObra(ABC):
     @classmethod
     def limpiar_datos(cls):
         try:
-            df = GestionarObra.extraer_datos("probar.csv")               
-            
-            # columnasAEliminar = ['ba_elige', 'link_interno', 'pliego_descarga', 'imagen_1', 'imagen_2', 'imagen_3', 'imagen_4', 'estudio_ambiental_descarga', 'entorno', 'compromiso','financiamiento']
-            
+            df = GestionarObra.extraer_datos("Nueva base corregida.csv")               
             df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-            # df = df.drop(columns=columnasAEliminar, axis=1)
             
             df.fillna({'nombre': 'Area ambiental'}, inplace=True)            
             df.fillna({'tipo_obra': 'Salud'}, inplace=True)            
@@ -71,10 +67,8 @@ class GestionarObra(ABC):
             df.fillna({'contratacion_tipo': 'Licitación Pública'}, inplace=True)
             df.fillna({'licitacion_anio': '2024'}, inplace=True)  
             df.fillna({'destacada': 'NO'},inplace=True)          
-            
-            # columnas_verificables = [col for col in df.columns if col not in columnasAEliminar]
-            
-            # df = df.dropna(subset=columnas_verificables, how='any')
+
+            df = df.iloc[:1245]
             
             df.to_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8", index=False)
                         
@@ -85,7 +79,7 @@ class GestionarObra(ABC):
             
     @classmethod
     def cargar_datos(cls):
-        df = GestionarObra.limpiar_datos()    
+        df = pd.read_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8")
 
         try:
             datosTipoObra = list(df['tipo'].unique())
@@ -142,8 +136,6 @@ class GestionarObra(ABC):
                     if not barrio or not comuna:
                         print("Datos de barrio o comuna faltantes. No se puede insertar.")
                         continue
-                    
-                    # Verificar si el barrio ya existe en la base de datos
                     barrio_existente = Barrio.select().where(Barrio.nombre == barrio).first()
                     
                     if barrio_existente:
@@ -159,332 +151,444 @@ class GestionarObra(ABC):
         except Exception as e:
             print(f"Error general al cargar datos para Barrio: {e}")
 
-        # try:
-        #     for area in df['area_responsable'].unique():
-        #         try:
-        #             area_existente = AreaResponsable.select().where(AreaResponsable.nombre == area).first()
+        try:
+            for area in df['area_responsable'].unique():
+                try:
+                    area_existente = AreaResponsable.select().where(AreaResponsable.nombre == area).first()
                     
-        #             if area_existente:
-        #                 print(f"Área responsable ya existente: {area}")
-        #                 continue
-        #             AreaResponsable.create(nombre=area)
-        #             print(f"Área responsable creada: {area}")
+                    if area_existente:
+                        print(f"Área responsable ya existente: {area}")
+                        continue
+                    AreaResponsable.create(nombre=area)
+                    print(f"Área responsable creada: {area}")
                 
-        #         except Exception as e:
-        #             print(f"Error al insertar área responsable {area}: {e}")
+                except Exception as e:
+                    print(f"Error al insertar área responsable {area}: {e}")
 
-        # except Exception as e:
-        #     print(f"Error general al cargar datos para Área Responsable: {e}")
+        except Exception as e:
+            print(f"Error general al cargar datos para Área Responsable: {e}")
         
-        # try:
-        #     for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
-        #         try:
-        #             barrio = Barrio.get(Barrio.nombre == row['barrio'])
+        try:
+            for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
+                try:
+                    barrio = Barrio.get(Barrio.nombre == row['barrio'])
 
-        #             ubicacion_existente = Ubicacion.select().where(
-        #                 (Ubicacion.idBarrio == barrio) &
-        #                 (Ubicacion.direccion == row['direccion']) &
-        #                 (Ubicacion.latitud == row['lat']) &
-        #                 (Ubicacion.longitud == row['lng'])
-        #             ).first()
+                    ubicacion_existente = Ubicacion.select().where(
+                        (Ubicacion.barrio == barrio) &
+                        (Ubicacion.direccion == row['direccion']) &
+                        (Ubicacion.latitud == row['lat']) &
+                        (Ubicacion.longitud == row['lng'])
+                    ).first()
                     
-        #             if ubicacion_existente:
-        #                 print(f"Ubicación ya existente: {row['direccion']} en Barrio: {row['barrio']}")
-        #                 continue
+                    if ubicacion_existente:
+                        print(f"Ubicación ya existente: {row['direccion']} en Barrio: {row['barrio']}")
+                        continue
 
-                    # Ubicacion.create(
-                    #     idBarrio=barrio,
-                    #     direccion=row['direccion'],
-                    #     latitud=row['lat'],
-                    #     longitud=row['lng']
-                    # )
-        #             print(f"Ubicación creada: {row['direccion']} en Barrio: {row['barrio']}")
+                    Ubicacion.create(
+                        barrio=barrio,
+                        direccion=row['direccion'],
+                        latitud=row['lat'],
+                        longitud=row['lng']
+                    )
+                    print(f"Ubicación creada: {row['direccion']} en Barrio: {row['barrio']}")
                 
-        #         except Barrio.DoesNotExist:
-        #             print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
-        #         except Exception as e:
-        #             print(f"Error inesperado al procesar la ubicación '{row['direccion']}': {e}")
+                except Barrio.DoesNotExist:
+                    print(f"Error: El barrio '{row['barrio']}' no existe en la base de datos. Verifica los datos.")
+                except Exception as e:
+                    print(f"Error inesperado al procesar la ubicación '{row['direccion']}': {e}")
 
-        # except Exception as e:
-        #     print(f"Error general al cargar datos para Ubicacion: {e}")
+        except Exception as e:
+            print(f"Error general al cargar datos para Ubicacion: {e}")
         
        
-        # try:
-        #     datos_empresas = df[['licitacion_oferta_empresa', 'licitacion_anio', 'cuit_contratista', 
-        #                     'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
-        #     for _, row in datos_empresas.iterrows():
-        #         try:
-        #             area_responsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
-        #             empresa_existente = Empresa.select().where(
-        #                 (Empresa.licitacionOfertaEmpresa == row['licitacion_oferta_empresa']) &
-        #                 (Empresa.cuitContratista == str(row['cuit_contratista'])[:13]) &
-        #                 (Empresa.numeroContratacion == row['nro_contratacion'])
-        #             ).first()
+        try:
+            datos_empresas = df[['licitacion_oferta_empresa', 'licitacion_anio', 'cuit_contratista', 
+                            'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
+            for _, row in datos_empresas.iterrows():
+                try:
+                    area_responsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
+                    empresa_existente = Empresa.select().where(
+                        (Empresa.licitacionOfertaEmpresa == row['licitacion_oferta_empresa']) &
+                        (Empresa.cuitContratista == str(row['cuit_contratista'])[:13]) &
+                        (Empresa.numeroContratacion == row['nro_contratacion'])
+                    ).first()
                     
-        #             if empresa_existente:
-        #                 print(f"Empresa ya existente: {row['licitacion_oferta_empresa']} - CUIT: {row['cuit_contratista']}")
-        #                 continue
+                    if empresa_existente:
+                        print(f"Empresa ya existente: {row['licitacion_oferta_empresa']} - CUIT: {row['cuit_contratista']}")
+                        continue
 
-        #             Empresa.create(
-        #                 licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
-        #                 licitacionAnio=row.get('licitacion_anio', 0),
-        #                 tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
-        #                 cuitContratista=str(row['cuit_contratista'])[:13],
-        #                 areaContratacion=area_responsable,
-        #                 numeroContratacion=row['nro_contratacion']
-        #             )
-        #             print(f"Empresa creada: {row['licitacion_oferta_empresa']} - CUIT: {row['cuit_contratista']}")
+                    Empresa.create(
+                        licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
+                        licitacionAnio=row.get('licitacion_anio', 0),
+                        tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
+                        cuitContratista=str(row['cuit_contratista'])[:13],
+                        areaContratacion=area_responsable,
+                        numeroContratacion=row['nro_contratacion']
+                    )
+                    print(f"Empresa creada: {row['licitacion_oferta_empresa']} - CUIT: {row['cuit_contratista']}")
                 
-        #         except KeyError as ke:
-        #             print(f"Error: Falta una columna clave en el DataFrame. Detalles: {ke}")
-        #         except ValueError as ve:
-        #             print(f"Error de valor: Datos inválidos al crear Empresa. Detalles: {ve}")
-        #         except pw.IntegrityError as ie:
-        #             print(f"Error de integridad: {ie}")
-        #         except Exception as e:
-        #             print(f"Error inesperado al insertar empresa: {row.get('licitacion_oferta_empresa', 'Desconocido')}, {e}")
+                except KeyError as ke:
+                    print(f"Error: Falta una columna clave en el DataFrame. Detalles: {ke}")
+                except ValueError as ve:
+                    print(f"Error de valor: Datos inválidos al crear Empresa. Detalles: {ve}")
+                except pw.IntegrityError as ie:
+                    print(f"Error de integridad: {ie}")
+                except Exception as e:
+                    print(f"Error inesperado al insertar empresa: {row.get('licitacion_oferta_empresa', 'Desconocido')}, {e}")
 
-        # except KeyError as ke:
-        #     print(f"Error: Falta una columna clave en el DataFrame principal. Detalles: {ke}")
-        # except ValueError as ve:
-        #     print(f"Error de valor general al procesar datos de empresas. Detalles: {ve}")
-        # except Exception as e:
-        #     print(f"Error inesperado al procesar datos de empresas: {e}")
+        except KeyError as ke:
+            print(f"Error: Falta una columna clave en el DataFrame principal. Detalles: {ke}")
+        except ValueError as ve:
+            print(f"Error de valor general al procesar datos de empresas. Detalles: {ve}")
+        except Exception as e:
+            print(f"Error inesperado al procesar datos de empresas: {e}")
 
-        
-        # Recorrer el archivo registro por registro y dentro del for pasamos los dtos dl archivo a objetos
-        # si es necesario, instanciar una obra y guardarla.Esto podria hacerse en un metodo aparte     
+        try:
+            df = pd.read_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8")
 
-        # try:  
-        #     for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio', 'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expedientenumero', 'porcentaje_avance', 'monto_contrato', 'descripcion']].drop_duplicates().iterrows():
-        #         try:
-        #             tipoObra = TipoObra.get(TipoObra.nombre == row['tipo'])
-        #             areaResponsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
-        #             etapa = Etapa.get(Etapa.nombre == row['etapa'])
-        #             ubicacion = Ubicacion.get(Ubicacion.direccion == row['direccion'])
-        #             montoContrato = row['monto_contrato'].replace('$', '').replace(',', '')
+            for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio',
+                              'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expedientenumero',
+                              'porcentaje_avance', 'monto_contrato', 'descripcion', 'destacada',
+                              'licitacion_oferta_empresa']].drop_duplicates().iterrows():
+                try:
+                    tipoObra, _ = TipoObra.get_or_create(nombre=row['tipo'])
+                    areaResponsable, _ = AreaResponsable.get_or_create(nombre=row['area_responsable'])
+                    etapa, _ = Etapa.get_or_create(nombre=row['etapa'])
+                    ubicacion, _ = Ubicacion.get_or_create(
+                        direccion=row['direccion'],
+                        defaults={
+                            'barrio': Barrio.get_or_create(nombre='Barrio Desconocido', comuna=1)[0],
+                            'latitud': 0.0,
+                            'longitud': 0.0
+                        }
+                    )
+                    empresa, _ = Empresa.get_or_create(
+                        licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
+                        defaults={
+                            'licitacionAnio': row.get('licitacion_anio', 2024),
+                            'tipoContratacion': row.get('contratacion_tipo', 'Desconocido'),
+                            'cuitContratista': str(row.get('cuit_contratista', '00000000000'))[:11],
+                            'areaContratacion': row.get('area_responsable', 'Desconocida'),
+                            'numeroContratacion': row.get('nro_contratacion', 0)
+                        }
+                    )
+                    if not (tipoObra and areaResponsable and etapa and ubicacion and empresa):
+                        print(f"Error: Faltan dependencias para la obra '{row['nombre']}'. No se puede crear.")
+                        continue
+                    try:
+                        montoContrato = int(row['monto_contrato'].replace('$', '').replace(',', ''))
+                    except ValueError:
+                        print(f"Error al convertir el monto de contrato: {row['monto_contrato']}")
+                        continue
+                    obraExistente = Obra.select().where(
+                        (Obra.nombre == row['nombre']) &
+                        (Obra.ubicacion == ubicacion) &
+                        (Obra.tipoObra == tipoObra) &
+                        (Obra.areaResponsable == areaResponsable) &
+                        (Obra.etapa == etapa) &
+                        (Obra.empresa == empresa)
+                    ).first()
+
+                    if obraExistente:
+                        print(f"La obra '{row['nombre']}' ya existe en la base de datos.")
+                        continue
+
+                    nueva_obra = Obra.create(
+                        nombre=row['nombre'],
+                        empresa=empresa,
+                        tipoObra=tipoObra,
+                        areaResponsable=areaResponsable,
+                        ubicacion=ubicacion,
+                        fechaInicio=row['fecha_inicio'],
+                        fechaFinIinicial=row['fecha_fin_inicial'],
+                        plazoMeses=row['plazo_meses'],
+                        manoObra=row['mano_obra'],
+                        etapa=etapa,
+                        numeroExpediente=row['expedientenumero'],
+                        porcentajeAvance=row['porcentaje_avance'],
+                        montoContrato=montoContrato,
+                        descripcion=row['descripcion'],
+                        destacada=row['destacada']
+                    )
+                    print(f"Nueva obra creada: {nueva_obra.nombre}")
+
+                except pw.IntegrityError as e:
+                    print(f"Error de integridad al procesar la obra '{row['nombre']}': {e}")
+                except Exception as e:
+                    print(f"Error inesperado al procesar la obra '{row['nombre']}': {e}")
+
+        except FileNotFoundError:
+            print("Error: El archivo 'datos_limpios_obras_urbanas.csv' no se encuentra. Verifique la ruta del archivo.")
+        except pd.errors.EmptyDataError:
+            print("Error: El archivo CSV está vacío.")
+        except pd.errors.ParserError:
+            print("Error: El archivo CSV no pudo ser leído. Verifique el formato.")
+        except Exception as e:
+            print(f"Error general al cargar datos para las obras: {e}")
+
+    @classmethod
+    def nueva_obra(cls):
+        try:
+            nombre = input("Ingresar el nombre de la nueva obra: ")
+            nroDeExpediente = ''.join(random.choices(string.ascii_uppercase + string.digits, k=9))
+            print(f"Número de expediente generado: {nroDeExpediente}")
+            while True:
+                try:
+                    montoDeContrato = int(input("Ingresar monto del contrato: "))
+                    break
+                except ValueError:
+                    print("Error: El monto del contrato debe ser un número entero.")
+
+            while True:
+                manoDeObra = input("Ingresar cantidad de mano de obra: ")
+                if manoDeObra.isdigit() and int(manoDeObra) >= 0:
+                    manoDeObra = int(manoDeObra)
+                    break
+                else:
+                    print("Error: La cantidad de mano de obra debe ser un número entero positivo.")
+
+            while True:
+                try:
+                    tipos_obra = list(TipoObra.select())
+                    if not tipos_obra:
+                        print("No hay tipos de obra registrados en la base de datos.")
+                        return
+                    print("\nSeleccione un tipo de obra de la lista:")
+                    for index, tipo in enumerate(tipos_obra, start=1):
+                        print(f"{index}. {tipo.nombre}")
+
+                    seleccion = input("Ingrese el número correspondiente al tipo de obra: ")
+                    if seleccion.isdigit():
+                        seleccion = int(seleccion)
+                        if 1 <= seleccion <= len(tipos_obra):
+                            tipoObraSeleccionado = tipos_obra[seleccion - 1]
+                            break
+                        else:
+                            print("Selección fuera de rango. Por favor, ingrese un número válido.")
+                    else:
+                        print("Entrada no válida. Por favor, ingrese un número.")
+                except Exception as e:
+                    print(f"Error al validar el tipo de obra: {e}")
+                    return
+            while True:
+                try:
+                    areas_responsables = list(AreaResponsable.select())
+                    if not areas_responsables:
+                        print("No hay áreas responsables registradas en la base de datos.")
+                        return
+                    print("\nSeleccione un área responsable de la lista:")
+                    for index, area in enumerate(areas_responsables, start=1):
+                        print(f"{index}. {area.nombre}")
+
+                    seleccion = input("Ingrese el número correspondiente al área responsable: ")
+                    if seleccion.isdigit():
+                        seleccion = int(seleccion)
+                        if 1 <= seleccion <= len(areas_responsables):
+                            areaResponsable = areas_responsables[seleccion - 1]
+                            print(f"Ha seleccionado el área responsable: {areaResponsable.nombre}")
+                            break
+                        else:
+                            print("Selección fuera de rango. Por favor, ingrese un número válido.")
+                    else:
+                        print("Entrada no válida. Por favor, ingrese un número.")
+                except Exception as e:
+                    print(f"Error al validar el área responsable: {e}")
+                    return
+            while True:
+                direccion = input("Ingrese la dirección de la obra: ").strip()
+                ubicacion = Ubicacion.get_or_none(direccion=direccion)
+                
+                if ubicacion:
+                    print(f"La ubicación '{direccion}' ya existe.")
+                    break
+                else:
+                    print(f"La ubicación '{direccion}' no existe en la base de datos.")
+                    crear_nueva = input("¿Desea crear una nueva ubicación? (s/n): ").strip().lower()
                     
-        #             obraExistente = Obra.select().where(
-        #                 Obra.nombre == row['nombre'],
-        #                 Obra.idUbicacion == ubicacion,
-        #                 Obra.idTipoObra == tipoObra,
-        #                 Obra.idAreaResponsable == areaResponsable,
-        #                 Obra.idEtapa == etapa
-        #             ).first()
-                    
-        #             if obraExistente:
-        #                 print(f"La obra '{row['nombre']}' ya existe en la base de datos.")
-        #                 continue
-                    
-        #             Obra.create(
-        #                 idTipoObra=tipoObra,
-        #                 idAreaResponsable=areaResponsable,
-        #                 idUbicacion=ubicacion,
-        #                 idEtapa=etapa,
-        #                 nombre=row['nombre'],
-        #                 fechaInicio=row['fecha_inicio'],
-        #                 fechaFinIinicial=row['fecha_fin_inicial'],
-        #                 plazoMeses=row['plazo_meses'],
-        #                 manoObra=row['mano_obra'],
-        #                 numeroExpediente=row['expedientenumero'],
-        #                 porcentajeAvance=row['porcentaje_avance'],
-        #                 montoContrato=montoContrato,
-        #                 descripcion=row['descripcion'],
-        #                 destacada=row['destacada']
-        #             )
-        #         except TipoObra.DoesNotExist:
-        #             print(f"Error: El tipo de obra '{row['tipo']}' no existe en la base de datos. Verifica los datos.")
-        #         except AreaResponsable.DoesNotExist:
-        #             print(f"Área responsable '{row['area_responsable']}' no encontrado.")
-        #         except Ubicacion.DoesNotExist:
-        #             print(f"Ubicación '{row['direccion']}' no encontrada.")
-        #         except Etapa.DoesNotExist:
-        #             print(f"Etapa '{row['etapa']}' no encontrada.")
-        # except Exception as e:
-        #     print(f"Error al cargar datos: {e}")
+                    if crear_nueva == 's':
+                        barrio_nombre = input("Ingrese el nombre del barrio: ").strip()
+                        comuna = input("Ingrese la comuna: ").strip()
+                        if not comuna.isdigit():
+                            print("Error: La comuna debe ser un número.")
+                            continue
+                        
+                        latitud = input("Ingrese la latitud (o presione enter para usar 0.0): ").strip() or '0.0'
+                        longitud = input("Ingrese la longitud (o presione enter para usar 0.0): ").strip() or '0.0'
+                        
+                        try:
+                            latitud = float(latitud)
+                            longitud = float(longitud)
+                        except ValueError:
+                            print("Error: Latitud y longitud deben ser valores numéricos.")
+                            continue
+                        
+                        barrio, created = Barrio.get_or_create(nombre=barrio_nombre, defaults={'comuna': int(comuna)})
+                        if created:
+                            print(f"Nuevo barrio '{barrio_nombre}' creado.")
+                        ubicacion = Ubicacion.create(
+                            barrio=barrio,
+                            direccion=direccion,
+                            latitud=latitud,
+                            longitud=longitud
+                        )
+                        print(f"Nueva ubicación creada: {ubicacion.direccion} en Barrio: {barrio.nombre}")
+                        break
+                    else:
+                        print("Por favor, ingrese una dirección válida existente.")
+            while True:
+                nombre_empresa = input("Ingrese el nombre de la empresa contratista: ").strip()
+                try:
+                    empresa = Empresa.get_or_none(licitacionOfertaEmpresa=nombre_empresa)
+                    if empresa:
+                        print(f"Empresa '{nombre_empresa}' encontrada.")
+                        break
+                    else:
+                        print(f"La empresa '{nombre_empresa}' no existe en la base de datos.")
+                        crear_empresa = input("¿Desea crear una nueva empresa? (s/n): ").strip().lower()
+                        if crear_empresa == 's':
+                            licitacionAnio = input("Ingrese el año de la licitación : ").strip()
+                            tipoContratacion = input("Ingrese el tipo de contratación : ").strip()
+                            cuitContratista = input("Ingrese el CUIT de la empresa (11 dígitos): ").strip()
+                            areaContratacion = input("Ingrese el área de contratación: ").strip()
+                            numeroContratacion = input("Ingrese el número de contratación: ").strip()
 
+                            try:
+                                empresa = Empresa.create(
+                                    licitacionOfertaEmpresa=nombre_empresa,
+                                    licitacionAnio=int(licitacionAnio),
+                                    tipoContratacion=tipoContratacion,
+                                    cuitContratista=cuitContratista,
+                                    areaContratacion=areaContratacion,
+                                    numeroContratacion=int(numeroContratacion)
+                                )
+                                print(f"Nueva empresa '{nombre_empresa}' creada exitosamente.")
+                                break
+                            except ValueError:
+                                print("Error: Algunos de los datos ingresados no son válidos. Por favor, intente nuevamente.")
+                except Exception as e:
+                    print(f"Error al validar la empresa contratista: {e}")
+                    return
+            try:
+                nueva_obra = Obra.create(
+                    nombre=nombre,
+                    empresa=empresa,
+                    tipoObra=tipoObraSeleccionado,
+                    areaResponsable=areaResponsable,
+                    ubicacion=ubicacion,
+                    fechaInicio="2024-01-01",
+                    fechaFinIinicial="2025-01-01",
+                    plazoMeses=12,
+                    manoObra=manoDeObra,
+                    etapa=Etapa.get_or_create(nombre="Proyecto")[0],
+                    numeroExpediente=nroDeExpediente,
+                    porcentajeAvance=0,
+                    montoContrato=montoDeContrato,
+                    descripcion="Descripción predeterminada",
+                    destacada="NO"
+                )
+                nueva_obra.save()
+                print("Obra creada exitosamente.")
+            except Exception as e:
+                print(f"Error al crear la nueva obra: {e}")
 
-    
-        # for _, row in df[['licitacion_oferta_empresa', 'nombre']].drop_duplicates().iterrows():
-        #     try:
-        #         empresa = Empresa.get_or_none(Empresa.licitacionOfertaEmpresa == row['licitacion_oferta_empresa'])
-        #         if not empresa:
-        #             print(f"Error: La empresa '{row['licitacion_oferta_empresa']}' no existe en la base de datos.")
-        #             continue
+        except Exception as e:
+            print(f"Ocurrió un error inesperado: {e}")
 
-        #         obra = Obra.get_or_none(Obra.nombre == row['nombre'])
-        #         if not obra:
-        #             print(f"Error: La obra '{row['nombre']}' no existe en la base de datos.")
-        #             continue
+    @classmethod
+    def obtener_indicadores(cls):
+        try:
+            print("\nListado de todas las áreas responsables:")
+            areas = AreaResponsable.select()
+            for area in areas:
+                print(f"- {area.nombre}")
 
-        #         
-      
-        #print("Datos cargados exitosamente.")
-        
-       
+            print("\nListado de todos los tipos de obra:")
+            tipos_obra = TipoObra.select()
+            for tipo in tipos_obra:
+                print(f"- {tipo.nombre}")
 
-#     @classmethod
-#     def nueva_obra(cls):
-#         try:
-#             nombre = input("Ingresar el nombre de la nueva obra: ")          
-#             try:
-#                 fechaDeInicio = int(input("Ingresar fecha de inicio de obra (solo año, en formato AAAA): "))
-#             except ValueError:
-#                 print("Error: La fecha de inicio debe ser un número entero.")
-#                 return
-#             try:
-#                 montoDeContrato = int(input("Ingresar monto de contrato: "))
-#             except ValueError:
-#                 print("Error: El monto de contrato debe ser un número entero.")
-#                 return
-#             try:
-#                 nroDeExpediente = int(input("Ingresar nro de expediente: "))
-#             except ValueError:
-#                 print("Error: El número de expediente debe ser un número entero.")
-#                 return
-#             manoDeObra = input("Ingresar tipo de mano de obra: ")
-#             while True:
-#                 tipoObra = input("Ingrese tipo de obra: ")
-#                 try:
-#                     if TipoObra.objects.filter(nombre=tipoObra).exists():
-#                         print("El tipo de obra existe.")
-#                         break
-#                     else:
-#                         print("El tipo de obra no existe. Ingrese uno correcto.")
-#                 except Exception as e:
-#                     print(f"Error al validar el tipo de obra: {e}")
-#                     return
-#             while True:
-#                 tipoDeArea = input("Ingrese el tipo de área: ")
-#                 try:
-#                     if AreaResponsable.objects.filter(nombre=tipoDeArea).exists():
-#                         print("El tipo de área existe.")
-#                         break
-#                     else:
-#                         print("El tipo de área no existe. Ingrese uno correcto.")
-#                 except Exception as e:
-#                     print(f"Error al validar el tipo de área: {e}")
-#                     return
-#             while True:
-#                 ubicacion = input("Ingrese la ubicación de la obra: ")
-#                 try:
-#                     if Ubicacion.objects.filter(nombre=ubicacion).exists():
-#                         print("La ubicación es existente.")
-#                         break
-#                     else:
-#                         print("La ubicación no existe. Ingrese los datos correctamente.")
-#                 except Exception as e:
-#                     print(f"Error al validar la ubicación: {e}")
-#                     return
-#             try:
-#                 nueva_obra = Obra.create(
-#                     nombre=nombre, 
-#                     fechaDeInicio=fechaDeInicio,
-#                     montoDeContrato=montoDeContrato,
-#                     nroDeExpediente=nroDeExpediente,
-#                     manoDeObra=manoDeObra
-#                 )
-#                 nueva_obra.save()
-#                 print("Obra creada exitosamente.")
-#             except Exception as e:
-#                 print(f"Error al crear la nueva obra: {e}")
-#         except Exception as e:
-#             print(f"Ocurrió un error inesperado: {e}")
+            print("\nCantidad de obras por etapa:")
+            etapas = Etapa.select()
+            for etapa in etapas:
+                cantidad = Obra.select().where(Obra.etapa == etapa).count()
+                print(f"- {etapa.nombre}: {cantidad} obras")
 
-
-#     @classmethod
-#     def obtener_indicadores(cls):
-#         try:
-#             print("\nListado de todas las áreas responsables:")
-#             areas = AreaResponsable.select()
-#             for area in areas:
-#                 print(f"- {area.nombre}")
-
-#             print("\nListado de todos los tipos de obra:")
-#             tipos_obra = TipoObra.select()
-#             for tipo in tipos_obra:
-#                 print(f"- {tipo.nombre}")
-
-#             print("\nCantidad de obras por etapa:")
-#             etapas = Etapa.select()
-#             for etapa in etapas:
-#                 cantidad = Obra.select().where(Obra.idEtapa == etapa).count()
-#                 print(f"- {etapa.nombre}: {cantidad} obras")
-
-#             print("\nCantidad de obras y monto total de inversión por tipo de obra:")
-#             for tipo in tipos_obra:
-#                 cantidad = Obra.select().where(Obra.idTipoObra == tipo).count()
-#                 monto_total = (
-#                 Obra.select(fn.SUM(Obra.montoContrato))
-#                 .where((Obra.idTipoObra == tipo) & (Obra.montoContrato.is_null(False)))
-#                 .scalar() or 0
-#                 )
-#                 print(f"- {tipo.nombre}: {cantidad} obras, Inversión total: ${monto_total}")
+            print("\nCantidad de obras y monto total de inversión por tipo de obra:")
+            for tipo in tipos_obra:
+                cantidad = Obra.select().where(Obra.tipoObra == tipo).count()
+                monto_total = (
+                Obra.select(fn.SUM(Obra.montoContrato))
+                .where((Obra.tipoObra == tipo) & (Obra.montoContrato.is_null(False)))
+                .scalar() or 0
+                )
+                print(f"- {tipo.nombre}: {cantidad} obras, Inversión total: ${monto_total}")
             
-#             print("\nListado de todos los barrios pertenecientes a las comunas 1, 2 y 3:")
-#             barrios = Barrio.select().where(Barrio.comuna.in_([1, 2, 3]))
-#             for barrio in barrios:
-#                 print(f"- {barrio.nombre} (Comuna {barrio.comuna})")
+            print("\nListado de todos los barrios pertenecientes a las comunas 1, 2 y 3:")
+            barrios = Barrio.select().where(Barrio.comuna.in_([1, 2, 3]))
+            for barrio in barrios:
+                print(f"- {barrio.nombre} (Comuna {barrio.comuna})")
 
-#             print("\nCantidad de obras finalizadas y su monto total de inversion en la Comuna 1")
-#             obras_finalizadas_comuna1 = (
-#                                         Obra.select()
-#                                         .join(Etapa, on=(Obra.idEtapa == Etapa.idEtapa))
-#                                         .join(Ubicacion, on=(Obra.idUbicacion == Ubicacion.idUbicacion))
-#                                         .join(Barrio, on=(Ubicacion.idBarrio == Barrio.idBarrio))
-#                                         .where(
-#                                             (Etapa.nombre == "Finalizada") & (Barrio.comuna == 1)
-#                                         )
-#                                         )
-#             cantidad_finalizadas = obras_finalizadas_comuna1.count()
-#             monto_total_comuna1 = (
-#                                     Obra.select(fn.SUM(Obra.montoContrato))
-#                                     .join(Etapa, on=(Obra.idEtapa == Etapa.idEtapa))
-#                                     .join(Ubicacion, on=(Obra.idUbicacion == Ubicacion.idUbicacion))
-#                                     .join(Barrio, on=(Ubicacion.idBarrio == Barrio.idBarrio))
-#                                     .where(
-#                                         (Etapa.nombre == "Finalizada") & (Barrio.comuna == 1)
-#                                     )
-#                                     .scalar() or 0
-#             )
-#             print(f" Obras Finalizadas en Comuna 1: {cantidad_finalizadas} obras, Inversión total: ${monto_total_comuna1}")
+            print("\nCantidad de obras finalizadas y su monto total de inversion en la Comuna 1")
+            obras_finalizadas_comuna1 = (
+                                        Obra.select()
+                                        .join(Etapa, on=(Obra.etapa == Etapa.idEtapa))
+                                        .join(Ubicacion, on=(Obra.ubicacion == Ubicacion.idUbicacion))
+                                        .join(Barrio, on=(Ubicacion.barrio == Barrio.idBarrio))
+                                        .where(
+                                            (Etapa.nombre == "Finalizada") & (Barrio.comuna == 1)
+                                        )
+                                        )
+            cantidad_finalizadas = obras_finalizadas_comuna1.count()
+            monto_total_comuna1 = (
+                                    Obra.select(fn.SUM(Obra.montoContrato))
+                                    .join(Etapa, on=(Obra.etapa == Etapa.idEtapa))
+                                    .join(Ubicacion, on=(Obra.ubicacion == Ubicacion.idUbicacion))
+                                    .join(Barrio, on=(Ubicacion.barrio == Barrio.idBarrio))
+                                    .where(
+                                        (Etapa.nombre == "Finalizada") & (Barrio.comuna == 1)
+                                    )
+                                    .scalar() or 0
+            )
+            print(f" Obras Finalizadas en Comuna 1: {cantidad_finalizadas} obras, Inversión total: ${monto_total_comuna1}")
 
-#             print("\nCantidad de obras finalizadas en un plazo menor o igual a 24 meses")
-#             obras_finalizadas_24_meses = (
-#                 Obra.select()
-#                 .join(Etapa, on=(Obra.idEtapa == Etapa.idEtapa))
-#                 .where(
-#                     (Etapa.nombre == 'Finalizada') & (Obra.plazoMeses <= 24)
-#                 )
-#             )
-#             cantidad_obras_24_meses = obras_finalizadas_24_meses.count()
-#             print(f"Cantidad de obras finalizadas: {cantidad_obras_24_meses}")
+            print("\nCantidad de obras finalizadas en un plazo menor o igual a 24 meses")
+            obras_finalizadas_24_meses = (
+                Obra.select()
+                .join(Etapa, on=(Obra.etapa == Etapa.idEtapa))
+                .where(
+                    (Etapa.nombre == 'Finalizada') & (Obra.plazoMeses <= 24)
+                )
+            )
+            cantidad_obras_24_meses = obras_finalizadas_24_meses.count()
+            print(f"Cantidad de obras finalizadas: {cantidad_obras_24_meses}")
 
-#             print("\nPorcentaje de obras finalizadas")
-#             total_obras = Obra.select().count()
-#             obras_finalizadas = Obra.select().join(Etapa, on=(Obra.idEtapa == Etapa.idEtapa)).where(Etapa.nombre == 'Finalizada').count()
-#             porcentaje_finalizadas = (obras_finalizadas / total_obras) * 100
-#             print(f"Porcentaje de obras finalizadas: {porcentaje_finalizadas}%")
+            print("\nPorcentaje de obras finalizadas")
+            total_obras = Obra.select().count()
+            obras_finalizadas = Obra.select().join(Etapa, on=(Obra.etapa == Etapa.idEtapa)).where(Etapa.nombre == 'Finalizada').count()
+            porcentaje_finalizadas = (obras_finalizadas / total_obras) * 100
+            print(f"Porcentaje de obras finalizadas: {porcentaje_finalizadas}%")
 
-#             print("\nCantidad total de mano de obra empleada")
-#             mano_obra_list = [obra.manoObra for obra in Obra.select() if obra.manoObra is not None]
-#             mano_obra_list = [int(mano) for mano in mano_obra_list if isinstance(mano, (int, float))]
-#             total_mano_obra = np.sum(mano_obra_list) if mano_obra_list else 0
-#             print(f"- Total de mano de obra empleada: {total_mano_obra}")
+            print("\nCantidad total de mano de obra empleada")
+            mano_obra_list = [obra.manoObra for obra in Obra.select() if obra.manoObra is not None]
+            mano_obra_list = [int(mano) for mano in mano_obra_list if isinstance(mano, (int, float))]
+            total_mano_obra = np.sum(mano_obra_list) if mano_obra_list else 0
+            print(f"- Total de mano de obra empleada: {total_mano_obra}")
 
-#             print("\nMonto total de inversión:")
-#             montos_list = [obra.montoContrato for obra in Obra.select() if obra.montoContrato is not None]
-#             montos_list = [int(monto) for monto in montos_list if isinstance(monto, (int, float, str)) and str(monto).isdigit()]
-#             monto_total_inversion = np.sum(montos_list) if montos_list else 0
-#             print(f"- Monto total de inversión: ${monto_total_inversion}")
+            print("\nMonto total de inversión:")
+            montos_list = [obra.montoContrato for obra in Obra.select() if obra.montoContrato is not None]
+            montos_list = [int(monto) for monto in montos_list if isinstance(monto, (int, float, str)) and str(monto).isdigit()]
+            monto_total_inversion = np.sum(montos_list) if montos_list else 0
+            print(f"- Monto total de inversión: ${monto_total_inversion}")
 
-#         except Exception as e:
-#             print(f"Error al obtener indicadores: {e}")
+        except Exception as e:
+            print(f"Error al obtener indicadores: {e}")
             
-prueba = GestionarObra()
-# prueba.obtener_indicadores()
-# prueba.extraer_datos('probar.csv')
-# prueba.conectar_db()
-# prueba.mapear_orm()
-# prueba.limpiar_datos()
-# prueba.cargar_datos()
+obrasPublicas = GestionarObra()
+
+# obrasPublicas.extraer_datos('Nueva base corregida.csv')
+# obrasPublicas.conectar_db()
+# obrasPublicas.mapear_orm()
+# obrasPublicas.limpiar_datos()
+# obrasPublicas.cargar_datos()
+# obrasPublicas.obtener_indicadores()
+# obrasPublicas.nueva_obra()
