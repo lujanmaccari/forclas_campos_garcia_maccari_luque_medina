@@ -3,7 +3,7 @@ from datetime import datetime
 from modelo_orm import Obra, Etapa, Empresa, TipoContratacion
 
 class ObraManager:
-    def __init__(self,obraId): 
+    def __init__(self, obraId): 
         try:
             self.obra = Obra.select().where(Obra.idObra == obraId).get()
             print(f"Obra encontrada: {self.obra.nombre}")
