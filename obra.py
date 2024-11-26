@@ -1,6 +1,6 @@
 from peewee import *
 from datetime import datetime
-from modelo_orm import Obra, Etapa, Empresa
+from modelo_orm import Obra, Etapa, Empresa, TipoContratacion
 
 class ObraManager:
     def __init__(self,obraId): 
@@ -13,7 +13,7 @@ class ObraManager:
     def nuevo_proyecto(self):
         try:
             etapa, _ = Etapa.get_or_create(nombre="Proyecto")
-            self.obra.idEtapa = etapa.idEtapa
+            self.obra.etapa_id = etapa.idEtapa
             self.obra.save()
             print(f"La obra {self.obra.nombre} fue configurada como nuevo proyecto")
         except Exception as e:
@@ -24,13 +24,14 @@ class ObraManager:
         nroContratacion = input("ingrese el numero de contratacion")
         
         try:
-            if not Empresa.select().where(Empresa.tipoContratacion == tipoContratacion).exists():
+            if not TipoContratacion.select().where(TipoContratacion.nombre == tipoContratacion).exists():
                 raise ValueError(f"TipoContratacion {tipoContratacion} no existe en la base de datos.")
             
             etapa, _ = Etapa.get_or_create(nombre="Contratación")
-            self.obra.idEtapa = etapa.idEtapa
-            self.obra.tipoContratacion = tipoContratacion
-            self.obra.numeroExpediente = nroContratacion
+            contratacion, _ = TipoContratacion.get_or_create(nombre=tipoContratacion)
+            self.obra.etapa_id = etapa.idEtapa
+            self.obra.tipoContratacion = contratacion.idTipoContratacion
+            self.obra.numeroContratacion = nroContratacion
         
             self.obra.save()
             print(f"La contratación para la obra {self.obra.nombre} ha sido iniciada como {tipoContratacion}")
@@ -51,9 +52,9 @@ class ObraManager:
             
             etapa, _ = Etapa.get_or_create(nombre="Adjudicada")
             empresa, _ = Empresa.get_or_create(licitacionOfertaEmpresa = nombreEmpresa)
-            self.obra.idEtapa = etapa.idEtapa
+            self.obra.etapa_id = etapa.idEtapa
             self.obra.numeroExpediente = numeroExpediente
-            self.obra.idEmpresa = empresa.idEmpresa 
+            self.obra.empresa_id = empresa.idEmpresa 
 
             self.obra.save()
             print(f"La obra {self.obra.nombre} fue adjudicada a la empresa {nombreEmpresa}, con el número de expediente {numeroExpediente}")
@@ -68,6 +69,9 @@ class ObraManager:
         fuenteFinanciamiento = input("ingrese la fuente de financiamiento")
         
         try:
+            if self.obra.etapa_id == 1:
+                raise ValueError("La obra está finalizada.")
+            
             if manoObra < 0 and not isinstance(int, manoObra):
                 raise ValueError("El valor de mano debe ser un número entero positivo")
             
@@ -84,12 +88,12 @@ class ObraManager:
                 raise ValueError("La fecha de inicio no puede ser mayor a la fecha de fin")
 
             etapa, _ = Etapa.get_or_create(nombre="En ejecución")
-            self.obra.destacada = destacada
+            self.obra.destacada = destacada.capitalize()
             self.obra.fechaInicio = fechaInicioFormateada
             self.obra.fechaFinIinicial = fechaFinFormateada
             self.obra.fuente_financiamiento = fuenteFinanciamiento
             self.obra.manoObra = manoObra
-            self.obra.idEtapa = etapa.idEtapa
+            self.obra.etapa_id = etapa.idEtapa
             self.obra.save()
             
             print(f"La obra '{self.obra.nombre}' ha iniciado su ejecución")
@@ -98,7 +102,8 @@ class ObraManager:
             print(f"Error al iniciar la obra: {e}")
 
     def actualizar_porcentaje_avance(self):
-        nuevoPorcentaje = float(input("Ingrese el nuevo porcentaje de avance (0-100): "))
+        nuevoPorcentaje = int(input("Ingrese el nuevo porcentaje de avance (0-100): "))
+        
         try:
             if not isinstance(nuevoPorcentaje, int):
                 raise ValueError("El porcentaje debe ser un número entero")
@@ -106,8 +111,11 @@ class ObraManager:
             if not 0 <= nuevoPorcentaje <= 100:
                 raise ValueError("El porcentaje debe estar entre 0 y 100")
             
-            if self.obra.idEtapa.nombre != "En ejecución":
-                raise ValueError(f"No se puede actualizar el porcentaje en una obra que está {self.obra.idEtapa.nombre}, debe estar en 'En ejecución'")
+            if self.obra.porcentajeAvance == nuevoPorcentaje:
+                raise ValueError("El porcentaje de avance ya es el mismo")
+            
+            if self.obra.porcentajeAvance == 100:
+                raise ValueError("La obra ya está finalizada")
             
             self.obra.porcentajeAvance =  nuevoPorcentaje
             self.obra.save()
@@ -115,7 +123,9 @@ class ObraManager:
         except Exception as e:
             print(f"Error al actualizar el porcentaje de avance: {e}")
             
-    def incrementar_plazo(self, cantidad):
+    def incrementar_plazo(self):
+        cantidad =  int(input("Ingrese la cantidad de meses a incrementar: "))
+        
         try:
             if not isinstance(cantidad, int):
                 raise ValueError("El número de meses debe ser un número entero")
@@ -123,7 +133,7 @@ class ObraManager:
             if cantidad < 0:
                 raise ValueError("El número de meses debe ser un número entero positivo")
 
-            if self.obra.idEtapa.nombre == "Finalizada":
+            if self.obra.porcentajeAvance == 100:
                 raise ValueError(f"No se puede incrementar el plazo en una obra que está finalizada")
             
             self.obra.plazoMeses += cantidad
@@ -132,27 +142,29 @@ class ObraManager:
         except Exception as e:
             print(f"Error al incrementar el plazo: {e}")
     
-    def incrementar_mano_obra(self, cantidad):
-        if not isinstance(cantidad, int):
-            raise ValueError("El número debe ser un número entero")
-            
-        if cantidad < 0:
-            raise ValueError("El número debe ser un número entero positivo")
-
-        if self.obra.idEtapa.nombre == "Finalizada":
-            raise ValueError(f"No se puede incrementar la mano de obra en una obra que está finalizada")
-            
+    def incrementar_mano_obra(self):
+        cantidad = int(input("Ingrese la cantidad de mano de obra a incrementar: "))
+    
         try:
+            if not isinstance(cantidad, int):
+                raise ValueError("El número debe ser un número entero")
+                
+            if cantidad < 0:
+                raise ValueError("El número debe ser un número entero positivo")
+
+            if self.obra.porcentajeAvance == 100:
+                raise ValueError(f"No se puede incrementar la mano de obra en una obra que está finalizada")
+            
             self.obra.manoObra += cantidad
             self.obra.save()
-            print(f"La mano de obra de '{self.obra.nombre}' aumentó a {cantidad}")
+            print(f"La mano de obra de '{self.obra.nombre}' aumentó {cantidad}")
         except Exception as e:
             print(f"Error al incrementar la mano de obra: {e}")
 
     def finalizar_obra(self):
         try:
             etapa, _ = Etapa.get_or_create(nombre="Finalizada")
-            self.obra.idEtapa = etapa.idEtapa
+            self.obra.etapa_id = etapa.idEtapa
             self.obra.porcentajeAvance = 100
             self.obra.save()
             print(f"La obra '{self.obra.nombre}' ha sido finalizada")
@@ -161,10 +173,12 @@ class ObraManager:
 
     def rescindir_obra(self):
         try:
+            if self.obra.porcentajeAvance == 100:
+                raise ValueError("La obra no puede ser rescindida si está finalizada")
+           
             etapa, _ = Etapa.get_or_create(nombre="Rescindida")
-            self.obra.idEtapa = etapa
+            self.obra.etapa_id = etapa
             self.obra.save()
             print(f"La obra '{self.obra.nombre}' ha sido rescindida")
         except Exception as e:
             print(f"Error al rescindir la obra {e}")
-            

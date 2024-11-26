@@ -6,7 +6,7 @@ sqlite_crear = SqliteDatabase('obras_urbanas.db',
 try:
     sqlite_crear.connect()
 except OperationalError as e:
-    print("Error al conectar la bbdd.",e)
+    print("Error al conectar la bbdd.", e)
     exit()
 
 class BaseModel(Model):
@@ -24,10 +24,8 @@ class Empresa(BaseModel):
     idEmpresa = AutoField()
     licitacionOfertaEmpresa = CharField(null=False, max_length=150, constraints=[Check('length(licitacionOfertaEmpresa) > 0')])
     licitacionAnio = IntegerField(null=False, constraints=[Check('licitacionAnio >= 2010')])
-    tipoContratacion = CharField(null=False, max_length=100, constraints=[Check('length(tipoContratacion) > 0')])
     cuitContratista = CharField(null=False, max_length=11, constraints=[Check('length(cuitContratista) == 11')])
     areaContratacion = CharField(null=False, max_length=100, constraints=[Check('length(areaContratacion) > 0')])
-    numeroContratacion = IntegerField(null=False)
 
     class Meta:
         db_table = 'Empresas'
@@ -38,7 +36,7 @@ class Barrio(BaseModel):
     comuna = IntegerField(null=False)
 
     class Meta:
-       db_table = 'Barrios'
+        db_table = 'Barrios'
 
 class TipoObra(BaseModel):
     idTipoObra = AutoField()
@@ -53,6 +51,13 @@ class AreaResponsable(BaseModel):
 
     class Meta:
        db_table = 'AreaResponsables'
+
+class TipoContratacion(BaseModel):
+    idTipoContratacion = AutoField()
+    nombre = CharField(unique=True, null=False, max_length=100, constraints=[Check('length(nombre) > 0')])
+
+    class Meta:
+        db_table = 'TipoContrataciones'
 
 class Ubicacion(BaseModel):
     idUbicacion = AutoField()
@@ -71,16 +76,18 @@ class Obra(BaseModel):
     tipoObra = ForeignKeyField(TipoObra, backref='tipoObra')
     areaResponsable = ForeignKeyField(AreaResponsable, backref='areaResponsable') 
     ubicacion = ForeignKeyField(Ubicacion, backref='ubicacion') 
+    tipoContratacion = ForeignKeyField(TipoContratacion, backref='tipoContratacion') 
+    etapa = ForeignKeyField(Etapa, backref='etapa') 
     fechaInicio = DateField(null=False) 
     fechaFinIinicial = DateField(null=False)
     plazoMeses = IntegerField(null=False, constraints=[Check('plazoMeses > 0')])
     manoObra = IntegerField(null=False, constraints=[Check('manoObra >= 0')])
-    etapa = ForeignKeyField(Etapa, backref='etapa') 
     numeroExpediente = CharField(null=False, unique=True)
     porcentajeAvance = IntegerField(null=False, constraints=[Check('porcentajeAvance >= 0 AND porcentajeAvance <= 100')])
     montoContrato = IntegerField(null=False, constraints=[Check('montoContrato >= 0')])
     descripcion = CharField(null=False, max_length=500, constraints=[Check('length(descripcion) > 0')])
     destacada = CharField(null=False, max_length=5)
-    
+    numeroContratacion = IntegerField(null=False)
+
     class Meta:
        db_table = 'Obras'

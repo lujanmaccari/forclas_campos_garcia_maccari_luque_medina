@@ -1,6 +1,6 @@
 import peewee as pw 
 from peewee import fn
-from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaResponsable, TipoObra, Barrio
+from modelo_orm import sqlite_crear, Obra, Empresa, Etapa, Ubicacion, AreaResponsable, TipoObra, Barrio, TipoContratacion
 import pandas as pd
 from abc import ABC 
 import numpy as np
@@ -42,7 +42,7 @@ class GestionarObra(ABC):
     @classmethod
     def mapear_orm(cls):
         try:
-            sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, Barrio])
+            sqlite_crear.create_tables([Etapa, Empresa, Ubicacion, TipoObra, AreaResponsable, Obra, Barrio, TipoContratacion])
             print("Tablas creadas exitosamente.")
         except pw.OperationalError as e:
             print(f"Error al crear las tablas: {e}")
@@ -80,7 +80,7 @@ class GestionarObra(ABC):
     @classmethod
     def cargar_datos(cls):
         df = pd.read_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8")
-
+        # Tabla Tipo de obra
         try:
             datosTipoObra = list(df['tipo'].unique())
             for tipo in datosTipoObra:
@@ -100,7 +100,25 @@ class GestionarObra(ABC):
 
         except Exception as e:
             print(f"Error general al cargar datos para TipoObra: {e}")
-
+        
+        # Tabla Tipo contratacion
+        try:
+            datosTipoContratacion = list(df['contratacion_tipo'].unique())
+            for tipo_contratacion in datosTipoContratacion:
+                try:
+                    tipo_contratacion_existente = TipoContratacion.select().where(TipoContratacion.nombre == tipo_contratacion).first()
+                    if tipo_contratacion_existente:
+                        print(f"Tipo de contratación ya existente: {tipo_contratacion}")
+                        continue
+                    tipo_contratacion_nueva = TipoContratacion.create(nombre=tipo_contratacion)
+                    tipo_contratacion_nueva.save()
+                    print(f"Tipo de contratación creado: {tipo_contratacion}")
+                except Exception as e:
+                    print(f"Error al procesar el tipo de contratación '{tipo_contratacion}': {e}")
+        except Exception as e:
+            print(f"Error general al cargar datos para TipoContratacion: {e}")
+            
+        # Tabla Etapas
         try:
             datosEtapa = list(df['etapa'].unique())
             
@@ -126,6 +144,7 @@ class GestionarObra(ABC):
         except Exception as e:
                 print(f"Error general al cargar datos para Etapa: {e}")
        
+        # Tabla Barrios
         try:
             for _, row in df[['barrio', 'comuna']].drop_duplicates().iterrows():
                 try:
@@ -151,6 +170,7 @@ class GestionarObra(ABC):
         except Exception as e:
             print(f"Error general al cargar datos para Barrio: {e}")
 
+        # Tabla Área Responsable
         try:
             for area in df['area_responsable'].unique():
                 try:
@@ -168,6 +188,7 @@ class GestionarObra(ABC):
         except Exception as e:
             print(f"Error general al cargar datos para Área Responsable: {e}")
         
+        # Tabla Ubicación
         try:
             for _, row in df[['barrio', 'direccion', 'lat', 'lng']].drop_duplicates().iterrows():
                 try:
@@ -200,17 +221,18 @@ class GestionarObra(ABC):
         except Exception as e:
             print(f"Error general al cargar datos para Ubicacion: {e}")
         
-       
+        # Tabla Empresa
         try:
             datos_empresas = df[['licitacion_oferta_empresa', 'licitacion_anio', 'cuit_contratista', 
-                            'nro_contratacion', 'contratacion_tipo', 'area_responsable']].drop_duplicates()
+                            # 'nro_contratacion', 'contratacion_tipo', 
+                            'area_responsable']].drop_duplicates()
             for _, row in datos_empresas.iterrows():
                 try:
                     area_responsable = AreaResponsable.get(AreaResponsable.nombre == row['area_responsable'])
                     empresa_existente = Empresa.select().where(
                         (Empresa.licitacionOfertaEmpresa == row['licitacion_oferta_empresa']) &
-                        (Empresa.cuitContratista == str(row['cuit_contratista'])[:13]) &
-                        (Empresa.numeroContratacion == row['nro_contratacion'])
+                        (Empresa.cuitContratista == str(row['cuit_contratista'])[:13]) 
+                        # (Empresa.numeroContratacion == row['nro_contratacion'])
                     ).first()
                     
                     if empresa_existente:
@@ -220,10 +242,10 @@ class GestionarObra(ABC):
                     Empresa.create(
                         licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
                         licitacionAnio=row.get('licitacion_anio', 0),
-                        tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
+                        # tipoContratacion=row.get('contratacion_tipo', 'Desconocido'),
                         cuitContratista=str(row['cuit_contratista'])[:13],
                         areaContratacion=area_responsable,
-                        numeroContratacion=row['nro_contratacion']
+                        # numeroContratacion=row['nro_contratacion']
                     )
                     print(f"Empresa creada: {row['licitacion_oferta_empresa']} - CUIT: {row['cuit_contratista']}")
                 
@@ -242,14 +264,15 @@ class GestionarObra(ABC):
             print(f"Error de valor general al procesar datos de empresas. Detalles: {ve}")
         except Exception as e:
             print(f"Error inesperado al procesar datos de empresas: {e}")
-
+            
+        # Tabla Obra
         try:
             df = pd.read_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8")
 
             for _, row in df[['tipo', 'area_responsable', 'etapa', 'direccion', 'nombre', 'fecha_inicio',
                               'fecha_fin_inicial', 'plazo_meses', 'mano_obra', 'expedientenumero',
                               'porcentaje_avance', 'monto_contrato', 'descripcion', 'destacada',
-                              'licitacion_oferta_empresa']].drop_duplicates().iterrows():
+                              'licitacion_oferta_empresa', 'contratacion_tipo', 'nro_contratacion']].drop_duplicates().iterrows():
                 try:
                     tipoObra, _ = TipoObra.get_or_create(nombre=row['tipo'])
                     areaResponsable, _ = AreaResponsable.get_or_create(nombre=row['area_responsable'])
@@ -266,12 +289,14 @@ class GestionarObra(ABC):
                         licitacionOfertaEmpresa=row['licitacion_oferta_empresa'],
                         defaults={
                             'licitacionAnio': row.get('licitacion_anio', 2024),
-                            'tipoContratacion': row.get('contratacion_tipo', 'Desconocido'),
+                            # 'tipoContratacion': row.get('contratacion_tipo', 'Desconocido'),
                             'cuitContratista': str(row.get('cuit_contratista', '00000000000'))[:11],
                             'areaContratacion': row.get('area_responsable', 'Desconocida'),
-                            'numeroContratacion': row.get('nro_contratacion', 0)
+                            # 'numeroContratacion': row.get('nro_contratacion', 0)
                         }
                     )
+                    tipoContratacion, _ = TipoContratacion.get_or_create(nombre=row['contratacion_tipo'])
+
                     if not (tipoObra and areaResponsable and etapa and ubicacion and empresa):
                         print(f"Error: Faltan dependencias para la obra '{row['nombre']}'. No se puede crear.")
                         continue
@@ -299,6 +324,7 @@ class GestionarObra(ABC):
                         tipoObra=tipoObra,
                         areaResponsable=areaResponsable,
                         ubicacion=ubicacion,
+                        tipoContratacion=tipoContratacion,
                         fechaInicio=row['fecha_inicio'],
                         fechaFinIinicial=row['fecha_fin_inicial'],
                         plazoMeses=row['plazo_meses'],
@@ -308,7 +334,8 @@ class GestionarObra(ABC):
                         porcentajeAvance=row['porcentaje_avance'],
                         montoContrato=montoContrato,
                         descripcion=row['descripcion'],
-                        destacada=row['destacada']
+                        destacada=row['destacada'],
+                        numeroContratacion=row['nro_contratacion']
                     )
                     print(f"Nueva obra creada: {nueva_obra.nombre}")
 
