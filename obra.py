@@ -182,3 +182,26 @@ class ObraManager:
             print(f"La obra '{self.obra.nombre}' ha sido rescindida")
         except Exception as e:
             print(f"Error al rescindir la obra {e}")
+
+# Pruebas para modificar las obras creadas manualmente
+
+# gestionarObraCreada = ObraManager(1245)
+# gestionarObraCreada.nuevo_proyecto()
+# gestionarObraCreada.iniciar_contratacion()
+# gestionarObraCreada.adjudicar_obra()
+# gestionarObraCreada.iniciar_obra()
+# gestionarObraCreada.actualizar_porcentaje_avance()
+# gestionarObraCreada.incrementar_plazo()
+# gestionarObraCreada.incrementar_mano_obra()
+# gestionarObraCreada.finalizar_obra()
+
+# gestionarObraCreada = ObraManager(1246)
+# gestionarObraCreada.nuevo_proyecto()
+# gestionarObraCreada.iniciar_contratacion()
+# gestionarObraCreada.adjudicar_obra()
+# gestionarObraCreada.iniciar_obra()
+# gestionarObraCreada.actualizar_porcentaje_avance()
+# gestionarObraCreada.incrementar_plazo()
+# gestionarObraCreada.incrementar_mano_obra()
+# gestionarObraCreada.rescindir_obra()
+

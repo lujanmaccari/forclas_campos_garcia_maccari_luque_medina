@@ -641,6 +641,6 @@ class GestionarObra(ABC):
         except Exception as e:
             print(f"Error al obtener indicadores: {e}")
             
-obrasPublicas = GestionarObra()
-obrasPublicas.nueva_obra()
+# obrasPublicas = GestionarObra()
+# obrasPublicas.nueva_obra()
 # los nombres de las obras de prueba son "Obra de Prueba", "Segunda obra de prueba"
