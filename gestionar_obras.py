@@ -643,3 +643,4 @@ class GestionarObra(ABC):
             
 obrasPublicas = GestionarObra()
 obrasPublicas.nueva_obra()
+# los nombres de las obras de prueba son "Obra de Prueba", "Segunda obra de prueba"
