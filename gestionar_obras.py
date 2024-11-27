@@ -80,6 +80,7 @@ class GestionarObra(ABC):
     @classmethod
     def cargar_datos(cls):
         df = pd.read_csv("datos_limpios_obras_urbanas.csv", sep=";", encoding="utf8")
+        
         # Tabla Tipo de obra
         try:
             datosTipoObra = list(df['tipo'].unique())
@@ -356,7 +357,8 @@ class GestionarObra(ABC):
     @classmethod
     def nueva_obra(cls):
         try:
-            nombre = input("Ingresar el nombre de la nueva obra: ")
+            nombre = input("Ingresar el nombre de la nueva obra: ").strip()
+            numeroContratacion = input("Ingrese el número de contratación: ").strip()
             nroDeExpediente = ''.join(random.choices(string.ascii_uppercase + string.digits, k=9))
             print(f"Número de expediente generado: {nroDeExpediente}")
             while True:
@@ -368,12 +370,13 @@ class GestionarObra(ABC):
 
             while True:
                 manoDeObra = input("Ingresar cantidad de mano de obra: ")
-                if manoDeObra.isdigit() and int(manoDeObra) >= 0:
-                    manoDeObra = int(manoDeObra)
-                    break
-                else:
-                    print("Error: La cantidad de mano de obra debe ser un número entero positivo.")
-
+                try:
+                    if manoDeObra.isdigit() and int(manoDeObra) >= 0:
+                        manoDeObra = int(manoDeObra)
+                        break
+                except ValueError:
+                    print("Error: La cantidad de mano de obra es inválida.")
+           
             while True:
                 try:
                     tipos_obra = list(TipoObra.select())
@@ -397,6 +400,7 @@ class GestionarObra(ABC):
                 except Exception as e:
                     print(f"Error al validar el tipo de obra: {e}")
                     return
+            
             while True:
                 try:
                     areas_responsables = list(AreaResponsable.select())
@@ -421,6 +425,7 @@ class GestionarObra(ABC):
                 except Exception as e:
                     print(f"Error al validar el área responsable: {e}")
                     return
+            
             while True:
                 direccion = input("Ingrese la dirección de la obra: ").strip()
                 ubicacion = Ubicacion.get_or_none(direccion=direccion)
@@ -462,6 +467,7 @@ class GestionarObra(ABC):
                         break
                     else:
                         print("Por favor, ingrese una dirección válida existente.")
+                        
             while True:
                 nombre_empresa = input("Ingrese el nombre de la empresa contratista: ").strip()
                 try:
@@ -474,19 +480,15 @@ class GestionarObra(ABC):
                         crear_empresa = input("¿Desea crear una nueva empresa? (s/n): ").strip().lower()
                         if crear_empresa == 's':
                             licitacionAnio = input("Ingrese el año de la licitación : ").strip()
-                            tipoContratacion = input("Ingrese el tipo de contratación : ").strip()
                             cuitContratista = input("Ingrese el CUIT de la empresa (11 dígitos): ").strip()
                             areaContratacion = input("Ingrese el área de contratación: ").strip()
-                            numeroContratacion = input("Ingrese el número de contratación: ").strip()
 
                             try:
                                 empresa = Empresa.create(
                                     licitacionOfertaEmpresa=nombre_empresa,
                                     licitacionAnio=int(licitacionAnio),
-                                    tipoContratacion=tipoContratacion,
                                     cuitContratista=cuitContratista,
                                     areaContratacion=areaContratacion,
-                                    numeroContratacion=int(numeroContratacion)
                                 )
                                 print(f"Nueva empresa '{nombre_empresa}' creada exitosamente.")
                                 break
@@ -495,24 +497,53 @@ class GestionarObra(ABC):
                 except Exception as e:
                     print(f"Error al validar la empresa contratista: {e}")
                     return
+                
+            while True:
+                contratacion = list(TipoContratacion.select())
+                
+                if not contratacion:
+                    print("No hay tipos de contratación disponibles.")
+                    return
+                
+                print("\nSeleccione un área responsable de la lista:")
+                
+                for index, item in enumerate(contratacion, start=1):
+                    print(f"{index}. {item.nombre}")
+                
+                itemSeleccionado = input("Ingrese el número del tipo de contratación: ")
+                
+                if itemSeleccionado.isdigit():
+                        itemSeleccionado = int(itemSeleccionado)
+                        if 1 <= itemSeleccionado <= len(contratacion):
+                            contratacionSeleccionada = contratacion[itemSeleccionado - 1]
+                            print(f"Ha seleccionado el tipo de contratación: {contratacionSeleccionada.nombre}")
+                            break
+                        else:
+                            print("Selección fuera de rango. Por favor, ingrese un número válido.")
+                else:
+                        print("Entrada no válida. Por favor, ingrese un número.")
+                        
             try:
                 nueva_obra = Obra.create(
                     nombre=nombre,
-                    empresa=empresa,
-                    tipoObra=tipoObraSeleccionado,
-                    areaResponsable=areaResponsable,
-                    ubicacion=ubicacion,
+                    empresa_id=empresa,
+                    tipoObra_id=tipoObraSeleccionado,
+                    areaResponsable_id=areaResponsable,
+                    ubicacion_id=ubicacion,
                     fechaInicio="2024-01-01",
                     fechaFinIinicial="2025-01-01",
                     plazoMeses=12,
                     manoObra=manoDeObra,
-                    etapa=Etapa.get_or_create(nombre="Proyecto")[0],
+                    etapa_id=Etapa.get_or_create(nombre="Proyecto")[0],
                     numeroExpediente=nroDeExpediente,
                     porcentajeAvance=0,
                     montoContrato=montoDeContrato,
                     descripcion="Descripción predeterminada",
-                    destacada="NO"
+                    destacada="NO",
+                    tipoContratacion_id = contratacionSeleccionada,
+                    numeroContratacion = numeroContratacion
                 )
+                
                 nueva_obra.save()
                 print("Obra creada exitosamente.")
             except Exception as e:
@@ -611,11 +642,4 @@ class GestionarObra(ABC):
             print(f"Error al obtener indicadores: {e}")
             
 obrasPublicas = GestionarObra()
-
-# obrasPublicas.extraer_datos('Nueva base corregida.csv')
-# obrasPublicas.conectar_db()
-# obrasPublicas.mapear_orm()
-# obrasPublicas.limpiar_datos()
-# obrasPublicas.cargar_datos()
-# obrasPublicas.obtener_indicadores()
-# obrasPublicas.nueva_obra()
+obrasPublicas.nueva_obra()
