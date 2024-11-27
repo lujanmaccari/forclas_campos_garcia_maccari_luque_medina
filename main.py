@@ -59,10 +59,10 @@ class ObrasUrbanasApp:
             self.tree.delete(row)
         for obra in Obra.select():
             self.tree.insert("", "end", values=(
-                obra.idObra,
-                obra.nombre,
-                obra.tipoObra.nombre if obra.tipoObra else "N/A",
-                obra.etapa.nombre if obra.etapa else "N/A"
+                str(obra.idObra).capitalize(),
+                obra.nombre.capitalize() if obra.nombre else "N/A",
+                obra.tipoObra.nombre.capitalize() if obra.tipoObra and obra.tipoObra.nombre else "N/A",
+                obra.etapa.nombre.capitalize() if obra.etapa and obra.etapa.nombre else "N/A"
             ))
     #esto carga las obras en la tabla
     
